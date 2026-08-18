@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TK Health — Amazon Performance Dashboard | Pure Micronutrients</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#513194;
+    --navy-2:#3F2575;
+    --ivory:#F7F5FB;
+    --ivory-2:#EDE6F5;
+    --slate:#5B5568;
+    --gold:#C9973E;
+    --gold-2:#A97B2E;
+    --green:#2EAD6D;
+    --critical:#C0392B;
+    --white:#FFFFFF;
+    --card-radius:14px;
+    --btn-radius:8px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ivory);
+    color:var(--slate);
+    font-family:'Poppins',sans-serif;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Poppins',sans-serif;}
+  a{color:inherit;}
+
+  /* ---------- Header ---------- */
+  .topbar{
+    background:var(--navy);
+    color:var(--ivory);
+    padding:28px 40px 34px;
+  }
+  .topbar-inner{max-width:1280px;margin:0 auto;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+  .brand-left{display:flex;align-items:center;gap:12px;}
+  .brand-left .logo{width:34px;height:34px;flex:none;}
+  .brand-name{font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;letter-spacing:.02em;color:var(--ivory);}
+  .brand-tag{font-size:11px;color:rgba(255,255,255,.78);font-weight:500;letter-spacing:.02em;font-style:italic;}
+  .snapshot-pill{
+    font-size:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.28);
+    color:var(--ivory);padding:7px 14px;border-radius:999px;display:flex;gap:8px;align-items:center;
+  }
+  .snapshot-pill b{color:#FFFFFF;font-weight:600;}
+  .eyebrow{margin-top:22px;font-size:13px;color:rgba(255,255,255,.78);font-weight:500;letter-spacing:.02em;}
+  h1.title{margin:6px 0 8px;font-size:32px;font-weight:600;color:var(--ivory);line-height:1.15;}
+  .sub{font-size:14px;color:#DED4EF;max-width:720px;line-height:1.55;}
+
+  /* ---------- Controls ---------- */
+  .controls-wrap{
+    max-width:1280px;margin:-20px auto 0;padding:0 40px;position:relative;z-index:2;
+  }
+  .controls-card{
+    background:var(--white);border-radius:var(--card-radius);
+    box-shadow:0 8px 24px rgba(81,49,148,.12);
+    padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .level-toggle{display:flex;background:var(--ivory-2);border-radius:999px;padding:4px;gap:2px;}
+  .level-toggle button{
+    border:none;background:transparent;padding:9px 20px;border-radius:999px;
+    font-family:'Poppins',sans-serif;font-weight:600;font-size:13.5px;color:var(--slate);cursor:pointer;
+    transition:.15s;
+  }
+  .level-toggle button.active{background:var(--navy);color:var(--ivory);}
+  .search-wrap{position:relative;flex:1;min-width:220px;max-width:340px;}
+  .search-wrap input{
+    width:100%;padding:9px 14px 9px 34px;border-radius:999px;border:1.5px solid var(--ivory-2);
+    font-family:'Poppins',sans-serif;font-size:13.5px;color:var(--navy);outline:none;background:var(--ivory);
+  }
+  .search-wrap input:focus{border-color:var(--navy);}
+  .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--slate);}
+
+  main{max-width:1280px;margin:0 auto;padding:26px 40px 70px;}
+  section{margin-bottom:30px;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .section-head h2{font-size:18px;color:var(--navy);margin:0;font-weight:700;}
+  .section-head .hint{font-size:12.5px;color:var(--slate);opacity:.8;}
+
+  /* ---------- KPI tiles ---------- */
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+  @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:680px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+  .kpi{
+    background:var(--white);border-radius:var(--card-radius);padding:16px 18px;
+    box-shadow:0 2px 10px rgba(81,49,148,.06);
+  }
+  .kpi .label{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);font-weight:600;opacity:.85;}
+  .kpi .value{font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;color:var(--navy);margin-top:6px;}
+  .kpi .sub{font-size:11.5px;color:var(--slate);margin-top:4px;opacity:.8;}
+  .kpi.accent{border-left:4px solid var(--gold);}
+
+  /* ---------- Cards / charts ---------- */
+  .card{background:var(--white);border-radius:var(--card-radius);padding:20px 22px;box-shadow:0 2px 10px rgba(81,49,148,.06);}
+  .two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
+  @media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+  .chart-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+  .chart-note{font-size:11.5px;color:var(--slate);opacity:.75;margin-bottom:10px;}
+  .legend{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--slate);}
+  .legend-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+
+  svg text{font-family:'Poppins',sans-serif;}
+  .bar-val{fill:var(--navy);font-size:11px;font-weight:600;}
+  .axis-label{fill:var(--slate);font-size:10.5px;opacity:.85;}
+  .grid-line{stroke:#E6DEF3;stroke-width:1;}
+
+  .tooltip{
+    position:fixed;pointer-events:none;background:var(--navy);color:var(--ivory);
+    font-size:11.5px;padding:8px 11px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.25);
+    opacity:0;transition:opacity .1s;z-index:50;line-height:1.5;
+  }
+  .tooltip b{color:var(--gold);}
+
+  /* ---------- Inventory banner ---------- */
+  .inv-banner{
+    display:flex;gap:18px;align-items:flex-start;background:linear-gradient(120deg,var(--navy),var(--navy-2));
+    color:var(--ivory);border-radius:var(--card-radius);padding:20px 22px;flex-wrap:wrap;
+  }
+  .inv-banner .icon{width:38px;height:38px;flex:none;border-radius:10px;background:rgba(201,151,62,.18);
+    display:flex;align-items:center;justify-content:center;}
+  .inv-stats{display:flex;gap:26px;flex-wrap:wrap;margin-top:6px;}
+  .inv-stat .n{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;color:var(--gold);}
+  .inv-stat .l{font-size:11px;color:#DED4EF;margin-top:2px;}
+  .inv-gap{
+    margin-top:12px;padding:10px 13px;background:rgba(255,255,255,.07);border-left:3px solid var(--gold);
+    border-radius:6px;font-size:12px;color:#EAE1F6;line-height:1.5;
+  }
+
+  /* ---------- Table ---------- */
+  .table-wrap{background:var(--white);border-radius:var(--card-radius);box-shadow:0 2px 10px rgba(81,49,148,.06);overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:12.8px;}
+  thead th{
+    background:var(--navy);color:var(--ivory);text-align:left;padding:11px 12px;font-weight:600;
+    font-size:11.5px;letter-spacing:.02em;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0;
+  }
+  thead th .arrow{opacity:.5;font-size:10px;margin-left:3px;}
+  thead th.sorted .arrow{opacity:1;color:var(--gold);}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--ivory-2);color:var(--navy);white-space:nowrap;}
+  tbody tr:hover{background:var(--ivory);}
+  tbody tr:last-child td{border-bottom:none;}
+  .sku-name{font-weight:700;}
+  .cat-tag{font-size:11px;color:var(--slate);opacity:.85;}
+  .status-pill{
+    display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;
+  }
+  .status-good{background:rgba(46,173,109,.14);color:var(--green);}
+  .status-warn{background:rgba(201,151,62,.16);color:var(--gold-2);}
+  .status-bad{background:rgba(192,57,43,.13);color:var(--critical);}
+  .status-over{background:rgba(81,49,148,.13);color:var(--navy);}
+  .status-none{background:#EEE;color:#999;}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .muted{color:var(--slate);opacity:.6;}
+
+  /* ---------- Inventory view ---------- */
+  .inv-gap-standalone{
+    background:var(--white);border-radius:var(--card-radius);padding:16px 20px;
+    box-shadow:0 2px 10px rgba(81,49,148,.06);font-size:12.5px;color:var(--slate);line-height:1.6;
+    border-left:3px solid var(--gold);
+  }
+  .inv-gap-standalone b{color:var(--navy);}
+
+  footer{max-width:1280px;margin:0 auto;padding:0 40px 50px;color:var(--slate);font-size:11.5px;opacity:.75;}
+  .hidden{display:none !important;}
+
+  /* ---------- SKU detail modal ---------- */
+  tbody#skuTbody tr{cursor:pointer;}
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(81,49,148,.55);z-index:100;
+    display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;
+  }
+  .modal{
+    background:var(--ivory);border-radius:var(--card-radius);max-width:980px;width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;
+  }
+  .modal-header{
+    background:var(--navy);color:var(--ivory);padding:20px 26px;display:flex;align-items:flex-start;
+    justify-content:space-between;gap:16px;
+  }
+  .modal-header .mh-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:19px;}
+  .modal-header .mh-sub{font-size:12px;color:#DED4EF;margin-top:4px;}
+  .modal-header .mh-sub b{color:var(--gold);}
+  .modal-close{
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:var(--ivory);
+    width:30px;height:30px;border-radius:8px;font-size:16px;line-height:1;cursor:pointer;flex:none;
+  }
+  .modal-close:hover{background:rgba(255,255,255,.2);}
+  .modal-body{padding:22px 26px 28px;max-height:78vh;overflow-y:auto;}
+  .modal-body .kpi-grid{grid-template-columns:repeat(5,1fr);margin-bottom:20px;}
+  @media(max-width:760px){.modal-body .kpi-grid{grid-template-columns:repeat(2,1fr);}}
+  .modal-section-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:14px;color:var(--navy);margin:22px 0 4px;}
+  .modal-section-note{font-size:11.5px;color:var(--slate);opacity:.75;margin-bottom:10px;}
+  .modal-empty{font-size:12.5px;color:var(--slate);opacity:.7;padding:14px 0;}
+  .theme-tag{font-size:11px;font-weight:600;color:var(--navy);background:var(--ivory-2);padding:2px 8px;border-radius:6px;display:inline-block;}
+  .match-tag{font-size:10.5px;color:var(--slate);opacity:.8;margin-left:6px;}
+
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:#D9CCEC;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div class="brand-left">
+        <svg class="logo" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="40" r="38" fill="#513194"/>
+          <circle cx="40" cy="23" r="5.5" fill="#FFFFFF"/>
+          <circle cx="24" cy="51" r="5.5" fill="#FFFFFF"/>
+          <circle cx="56" cy="51" r="5.5" fill="#FFFFFF"/>
+          <line x1="40" y1="23" x2="24" y2="51" stroke="#FFFFFF" stroke-width="2.5"/>
+          <line x1="40" y1="23" x2="56" y2="51" stroke="#FFFFFF" stroke-width="2.5"/>
+          <line x1="24" y1="51" x2="56" y2="51" stroke="#FFFFFF" stroke-width="2.5"/>
+        </svg>
+        <div>
+          <div class="brand-name">Pure Micronutrients</div>
+          <div class="brand-tag">Embracing Life + Longevity, Everyday.</div>
+        </div>
+      </div>
+      <div class="snapshot-pill" id="snapshotBadge">● Live snapshot &nbsp;<b>Jul 6 – Aug 4, 2026</b>&nbsp; (trailing 30 days)</div>
+    </div>
+    <div class="eyebrow">Client account performance</div>
+    <h1 class="title">TK Health — Amazon Metrics Dashboard</h1>
+    <div class="sub">Pure Micronutrients (US) · sales, ad performance, discoverability and inventory pulled live from Data Brill Core. Toggle between the whole account and individual SKUs below.</div>
+  </div>
+</div>
+
+<div class="controls-wrap">
+  <div class="controls-card">
+    <div class="level-toggle" id="levelToggle">
+      <button class="active" data-level="account">Account level</button>
+      <button data-level="sku">By SKU</button>
+      <button data-level="inventory">Inventory</button>
+      <button data-level="profitability">Profitability</button>
+    </div>
+    <div class="level-toggle" id="windowToggle">
+      <button class="active" data-window="30d">30 days</button>
+      <button data-window="7d">7 days</button>
+    </div>
+    <div class="search-wrap" id="searchWrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="skuSearch" type="text" placeholder="Search SKU, ASIN or category…">
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- ==================== ACCOUNT VIEW ==================== -->
+  <div id="accountView">
+
+    <section>
+      <div class="section-head"><h2 id="acctKpisTitle">Account KPIs — last 30 days</h2><div class="hint">26 active SKUs · US marketplace</div></div>
+      <div class="kpi-grid" id="acctKpis"></div>
+    </section>
+
+    <section>
+      <div class="two-col">
+        <div class="card">
+          <div class="chart-title">Total sales by week</div>
+          <div class="chart-note">Ordered product sales (organic + ads). Last bar is a partial week in progress.</div>
+          <svg id="salesBarChart" width="100%" height="230" viewBox="0 0 560 230"></svg>
+        </div>
+        <div class="card">
+          <div class="chart-title">TACOS trend</div>
+          <div class="chart-note">Total ad spend ÷ total sales, by week</div>
+          <svg id="tacosLineChart" width="100%" height="230" viewBox="0 0 400 230"></svg>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="two-col">
+        <div class="card">
+          <div class="chart-title">Search visibility share (SQP)</div>
+          <div class="chart-note">Our share of category impressions, clicks and purchases vs. the whole market</div>
+          <svg id="sqpChart" width="100%" height="220" viewBox="0 0 560 220"></svg>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#513194"></span>Impression share</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#C9973E"></span>Click share</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#2EAD6D"></span>Purchase share</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;justify-content:center;">
+          <div class="chart-title">Funnel — last 30 days</div>
+          <div class="chart-note">Account-wide, ad-attributed</div>
+          <div id="funnelWrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>Advertising — by campaign type &amp; match/targeting type</h2><div class="hint">Account-wide, trailing 30 days · full campaign-level pull</div></div>
+      <div class="two-col">
+        <div class="card" style="padding:14px 16px;">
+          <div class="chart-title" style="font-size:12px;">By ad type</div>
+          <div class="chart-note">Sponsored Products, Sponsored Brands, Sponsored Brands Video and Sponsored Display, summed across all 26 SKUs.</div>
+          <div id="acctAdTypesWrap"></div>
+        </div>
+        <div class="card" style="padding:14px 16px;">
+          <div class="chart-title" style="font-size:12px;">By match / targeting type</div>
+          <div class="chart-note">Exact, phrase, broad and auto — plus manual product/category and Display targeting — classified from the account's campaign-naming convention (native match-type isn't exposed by Data Brill Core for this account).</div>
+          <div id="acctMatchTypesWrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>BSR trend — market position</h2><div class="hint" id="bsrHint">26 SKUs</div></div>
+      <div class="kpi-grid" id="bsrKpis"></div>
+      <div class="modal-section-note" style="margin:10px 2px 12px;">Best Sellers Rank in each SKU's primary Amazon category — lower is better. Trend covers the available look-back window (see hint above); click any row to open the full SKU breakdown, including its weekly BSR chart.</div>
+      <div class="table-wrap">
+        <table id="bsrTable">
+          <thead>
+            <tr>
+              <th>SKU</th><th>Category</th>
+              <th class="num">BSR now</th><th class="num">BSR ~30d ago</th><th class="num">BSR at window start</th>
+              <th class="num">Change (30d)</th><th class="num">Change (full window)</th><th>Trend</th>
+            </tr>
+          </thead>
+          <tbody id="bsrTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== SKU VIEW ==================== -->
+  <div id="skuView" class="hidden">
+
+    <section>
+      <div class="section-head"><h2>Selection summary</h2><div class="hint" id="skuCount">26 SKUs</div></div>
+      <div class="kpi-grid" id="skuKpis"></div>
+    </section>
+
+    <section>
+      <div class="card">
+        <div class="chart-title">Top 10 SKUs by total sales</div>
+        <div class="chart-note" id="topSkuNote">Trailing 30 days · click any row in the table below to open a full SKU breakdown — sales, ads, weekly trend and keyword performance</div>
+        <svg id="topSkuChart" width="100%" height="330" viewBox="0 0 700 330"></svg>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>All SKUs</h2><div class="hint">Click any column to sort · BSR shown for the SKU's primary Amazon category · TACOS on very low-volume SKUs can exceed 100% where ad-attribution and Sales &amp; Traffic windows diverge</div></div>
+      <div class="table-wrap">
+        <table id="skuTable">
+          <thead>
+            <tr>
+              <th data-key="sku">SKU <span class="arrow">▾</span></th>
+              <th data-key="category">Category <span class="arrow">▾</span></th>
+              <th data-key="bsr" class="num">BSR <span class="arrow">▾</span></th>
+              <th data-key="sessions" class="num">Sessions <span class="arrow">▾</span></th>
+              <th data-key="totalSales" class="num">Total sales <span class="arrow">▾</span></th>
+              <th data-key="adSpend" class="num">Ad spend <span class="arrow">▾</span></th>
+              <th data-key="adSales" class="num">Ad sales <span class="arrow">▾</span></th>
+              <th data-key="ctr" class="num">CTR <span class="arrow">▾</span></th>
+              <th data-key="cvr" class="num">CVR <span class="arrow">▾</span></th>
+              <th data-key="acos" class="num">ACOS <span class="arrow">▾</span></th>
+              <th data-key="tacos" class="num">TACOS <span class="arrow">▾</span></th>
+              <th data-key="totalUnits" class="num">Units <span class="arrow">▾</span></th>
+            </tr>
+          </thead>
+          <tbody id="skuTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== INVENTORY VIEW ==================== -->
+  <div id="inventoryView" class="hidden">
+
+    <section>
+      <div class="section-head"><h2>Reserve inventory — by SKU</h2><div class="hint" id="invCount">26 SKUs</div></div>
+      <div class="kpi-grid" id="invKpis"></div>
+    </section>
+
+    <section id="pacingSection">
+      <div class="section-head"><h2>Amazon inventory pacing (SP-API)</h2><div class="hint">Real Amazon on-hand + inbound — account-wide</div></div>
+      <div class="card" style="padding:18px 20px;">
+        <div id="pacingWrap"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="inv-gap-standalone">
+        <b>How the SKU table below is calculated:</b> target cover is <b>90 days</b> — the buffer we always want on hand. Reorder point is target cover plus an assumed <b>60-day</b> supplier lead time (production + shipping to the reserve warehouse) = <b>150 days</b> of cover — order from the supplier once a SKU's reserve drops to that level, so stock lands before you dip under the 90-day floor. Overstock is flagged above <b>270 days</b> (nine months) of cover, where capital and expiry risk start to outweigh the safety margin.
+        <br><br>
+        ⚠ <b>Data gap:</b> stock counts below are from <b>The Fulfillment Lab (3PL reserve warehouse, Tampa)</b> as of 6 August 2026 — this is what's available to ship <i>into</i> Amazon, not what's already sitting in Amazon's FBA network. The panel above now pulls real Amazon on-hand + inbound units via SP-API — but Data Brill Core's per-product grouping isn't configured for this account, so that feed currently returns one blended account-wide total rather than a true per-SKU breakdown (it does flag the single worst-runway ASIN within the blend). Until that grouping is fixed, the per-SKU table below still uses 3PL reserve stock as the best available per-SKU proxy — read its "reserve cover" as <i>time until the 3PL runs out</i>, not total time until an Amazon stockout (FBA holds additional unseen units on top of this).
+        <br><br>
+        Lead time is a placeholder assumption — tell your assistant the account's real supplier lead time and this recalculates.
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>All SKUs — reserve cover</h2><div class="hint">Click any column to sort · reserve units are from the 3PL, summed across open lots · expiry flag means current sell-through won't clear the stock before its earliest lot expires</div></div>
+      <div class="table-wrap">
+        <table id="invTable">
+          <thead>
+            <tr>
+              <th data-key="sku">SKU <span class="arrow">▾</span></th>
+              <th data-key="category">Category <span class="arrow">▾</span></th>
+              <th data-key="available" class="num">Reserve units <span class="arrow">▾</span></th>
+              <th data-key="velocityPerDay" class="num">Velocity/day <span class="arrow">▾</span></th>
+              <th data-key="reserveCoverDays" class="num">Reserve cover <span class="arrow">▾</span></th>
+              <th data-key="status" class="num">Status <span class="arrow">▾</span></th>
+              <th data-key="expiry" class="num">Earliest lot expiry <span class="arrow">▾</span></th>
+            </tr>
+          </thead>
+          <tbody id="invTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== PROFITABILITY VIEW ==================== -->
+  <div id="profitabilityView" class="hidden">
+
+    <section>
+      <div class="section-head"><h2 id="marginKpisTitle">Profitability — last 30 days</h2><div class="hint" id="marginHint">26 SKUs</div></div>
+      <div class="kpi-grid" id="marginKpis"></div>
+    </section>
+
+    <section>
+      <div class="inv-gap-standalone">
+        <b>How this is calculated:</b> Gross profit = Total sales − COGS (units sold × landed cost/unit) − Amazon referral fee (assumed flat <b>15%</b> of sales, Health &amp; Household standard) − ad spend. Margin % = gross profit ÷ total sales.
+        <br><br>
+        ⚠ <b>Data gap:</b> COGS is from the cost sheet you uploaded (Sellerboard export, per-SKU landed cost — most recent effective cost period used per SKU). This margin figure <b>excludes FBA fulfillment (pick-pack) and monthly storage fees</b>, since no per-SKU weight/dimension data is connected yet — so it's landed-cost margin after referral fee and ad spend, not full net profit after every Amazon fee. Share FBA fee-per-unit or weight/size tier per SKU to tighten this further.
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>All SKUs — profitability</h2><div class="hint">Click any column to sort · COGS effective date shown per SKU · negative margin means ad spend + fees exceed what's left after COGS</div></div>
+      <div class="table-wrap">
+        <table id="marginTable">
+          <thead>
+            <tr>
+              <th data-key="sku">SKU <span class="arrow">▾</span></th>
+              <th data-key="category">Category <span class="arrow">▾</span></th>
+              <th data-key="cogsPerUnit" class="num">COGS/unit <span class="arrow">▾</span></th>
+              <th data-key="totalSales" class="num">Sales <span class="arrow">▾</span></th>
+              <th data-key="cogsTotal" class="num">COGS total <span class="arrow">▾</span></th>
+              <th data-key="referralTotal" class="num">Referral fee (15%) <span class="arrow">▾</span></th>
+              <th data-key="adSpend" class="num">Ad spend <span class="arrow">▾</span></th>
+              <th data-key="grossProfit" class="num">Gross profit <span class="arrow">▾</span></th>
+              <th data-key="marginPct" class="num">Margin % <span class="arrow">▾</span></th>
+              <th data-key="profitPerUnit" class="num">Profit/unit <span class="arrow">▾</span></th>
+            </tr>
+          </thead>
+          <tbody id="marginTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+</main>
+
+<div class="tooltip" id="tooltip"></div>
+
+<div class="modal-overlay hidden" id="skuModalOverlay">
+  <div class="modal" id="skuModal">
+    <div class="modal-header">
+      <div>
+        <div class="mh-title" id="mhTitle">SKU</div>
+        <div class="mh-sub" id="mhSub"></div>
+      </div>
+      <button class="modal-close" id="mhClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="mhBody"></div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Pure Micronutrients (TK Health Pty Ltd). Internal performance dashboard — not for external distribution. Data: Data Brill Core (ads, traffic, BSR, inventory pacing) and product mapping from the account's bulk export. Snapshot generated 6 August 2026 for the window 6 July – 4 August 2026. Ask Tony's assistant to refresh this artifact for an updated pull.
+</footer>
+
+<script id="metrics-data" type="application/json">{"account":{"totalSales":820414.01,"sessions":124550,"totalUnits":32576,"impressions":2415450,"clicks":44622,"adSpend":155521.02,"adSales":239608.34,"adUnits":9592,"adOrders":9309,"ctr":0.0185,"cvr":0.2086,"acos":0.6491,"roas":1.54,"tacos":18.96},"skus":[{"asin":"B097TKQSQD","sku":"SA-FFRON-FBA","category":"Herbal Supplements","bsr":48,"sessions":52331,"totalUnits":18560,"totalSales":462979.88,"impressions":1049857,"clicks":28755,"adSpend":99225.09,"adSales":166482.06,"adUnits":6673,"adOrders":6480,"ctr":0.0274,"cvr":0.2254,"acos":0.596,"roas":1.68,"tacos":21.43,"weekly":[{"period":"2026-07-12","sessions":13905,"units":4928,"sales":122939.68},{"period":"2026-07-19","sessions":11895,"units":4312,"sales":107737.62},{"period":"2026-07-26","sessions":11574,"units":4143,"sales":103328.02},{"period":"2026-08-02","sessions":13123,"units":4456,"sales":110980.27},{"period":"2026-08-09","sessions":1834,"units":721,"sales":17994.29}],"campaigns":[{"campaignName":"DB- Saffron \"saffron supplement\" GT SPKE; t=allDay mn=1700","theme":"saffron supplement","matchType":"SPKE","impressions":470703,"clicks":11567,"spend":46849.14,"sales":72256.45,"units":2897,"orders":2816,"ctr":0.0246,"cvr":0.2435,"acos":0.6484,"roas":1.54},{"campaignName":"DB- Saffron \"B09DTN7P4W\" GT SPTA; mn=550 mx=800","theme":"B09DTN7P4W","matchType":"SPTA","impressions":191293,"clicks":6626,"spend":21330.52,"sales":39203.18,"units":1571,"orders":1533,"ctr":0.0346,"cvr":0.2314,"acos":0.5441,"roas":1.84},{"campaignName":"DB- Saffron \"B097TKQSQD\" GT SPTA:defensive; mn=150 mx=200","theme":"B097TKQSQD","matchType":"SPTA","impressions":29760,"clicks":1707,"spend":4599.94,"sales":9004.03,"units":361,"orders":352,"ctr":0.0574,"cvr":0.2062,"acos":0.5109,"roas":1.96},{"campaignName":"DB- Saffron G SPTA; mn=110","theme":null,"matchType":"SPTA","impressions":72105,"clicks":1421,"spend":4437.73,"sales":6367.35,"units":255,"orders":244,"ctr":0.0197,"cvr":0.1717,"acos":0.697,"roas":1.43},{"campaignName":"DB- Saffron \"saffron\" GT SPKE; t=allDay mn=70","theme":"saffron","matchType":"SPKE","impressions":14541,"clicks":1299,"spend":3898.18,"sales":8210.06,"units":330,"orders":322,"ctr":0.0893,"cvr":0.2479,"acos":0.4748,"roas":2.11},{"campaignName":"DB- Saffron \"saffron supplement woman\" GT SPKE; t=allDay mn=70","theme":"saffron supplement woman","matchType":"SPKE","impressions":93795,"clicks":1066,"spend":3678.23,"sales":6012.7,"units":241,"orders":240,"ctr":0.0114,"cvr":0.2251,"acos":0.6117,"roas":1.63}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":1042318,"clicks":28659,"spend":98785.12,"sales":167757.53,"units":6724,"orders":6532,"ctr":0.0275,"cvr":0.2279,"acos":0.5889,"roas":1.7},{"adType":"SBV","label":"Sponsored Brands Video","impressions":4242,"clicks":84,"spend":432.71,"sales":524.37,"units":21,"orders":19,"ctr":0.0198,"cvr":0.2262,"acos":0.8252,"roas":1.21},{"adType":"SD","label":"Sponsored Display","impressions":2870,"clicks":18,"spend":35.64,"sales":99.88,"units":4,"orders":4,"ctr":0.0063,"cvr":0.2222,"acos":0.3568,"roas":2.8}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":675158,"clicks":16183,"spend":61867.78,"sales":102275.78,"ctr":0.024,"cvr":0.2461,"acos":0.6049,"roas":1.65},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":320160,"clicks":10600,"spend":33032.09,"sales":58944.31,"ctr":0.0331,"cvr":0.2164,"acos":0.5604,"roas":1.78},{"key":"broad","label":"Broad match","impressions":29841,"clicks":866,"spend":2320.13,"sales":3196.16,"ctr":0.029,"cvr":0.1397,"acos":0.7259,"roas":1.38},{"key":"auto","label":"Auto targeting","impressions":21401,"clicks":1094,"spend":1997.83,"sales":3865.65,"ctr":0.0511,"cvr":0.1399,"acos":0.5168,"roas":1.93},{"key":"display_targeting","label":"Display targeting","impressions":2870,"clicks":18,"spend":35.64,"sales":99.88,"ctr":0.0063,"cvr":0.2222,"acos":0.3568,"roas":2.8}],"bsrTrend":[{"period":"2026-06-14","rank":41},{"period":"2026-06-21","rank":50},{"period":"2026-06-28","rank":47},{"period":"2026-07-05","rank":41},{"period":"2026-07-12","rank":46},{"period":"2026-07-19","rank":48},{"period":"2026-07-26","rank":48},{"period":"2026-08-02","rank":45},{"period":"2026-08-09","rank":48}],"bsrSummary":{"category":"Herbal Supplements","current":48,"currentDate":"2026-08-09","rank30dAgo":42,"date30dAgo":"2026-07-10","rankEarliest":42,"dateEarliest":"2026-06-16","pctChange30d":-14.3,"pctChangeFull":-14.3,"trend":"down"},"metrics7d":{"sessions":12919,"totalUnits":4432,"totalSales":110579.1,"impressions":296023,"clicks":6491,"adSpend":22581.63,"adSales":35097.55,"adUnits":1405,"adOrders":1368,"ctr":0.0219,"cvr":0.2108,"acos":0.6434,"tacos":20.42,"roas":1.55},"cogsPerUnit":2.16,"cogsAsOf":"02/01/2026"},{"asin":"B00NRQ06VM","sku":"MAG-CAPS-FBA180","category":"Magnesium","bsr":135,"sessions":20588,"totalUnits":4920,"totalSales":124288.67,"impressions":344880,"clicks":4626,"adSpend":18983.89,"adSales":25219.81,"adUnits":1002,"adOrders":963,"ctr":0.0134,"cvr":0.2082,"acos":0.7527,"roas":1.33,"tacos":15.27,"weekly":[{"period":"2026-07-12","sessions":4705,"units":1105,"sales":27483.09},{"period":"2026-07-19","sessions":4606,"units":1166,"sales":29094.79},{"period":"2026-07-26","sessions":5331,"units":1103,"sales":29380.08},{"period":"2026-08-02","sessions":5153,"units":1350,"sales":33578.21},{"period":"2026-08-09","sessions":793,"units":196,"sales":4752.5}],"campaigns":[{"campaignName":"DB- Magnesium \"magnesium glycinate 200 mg\" GT SPKE; t=allDay mn=300","theme":"magnesium glycinate 200 mg","matchType":"SPKE","impressions":39085,"clicks":1224,"spend":7120.88,"sales":8561.9,"units":340,"orders":333,"ctr":0.0313,"cvr":0.2721,"acos":0.8317,"roas":1.2},{"campaignName":"DB- Magnesium \"magnesium glycinate\" GT SPKE; mn=100","theme":"magnesium glycinate","matchType":"SPKE","impressions":96125,"clicks":777,"spend":2704.34,"sales":3310.39,"units":132,"orders":128,"ctr":0.0081,"cvr":0.1647,"acos":0.8169,"roas":1.22},{"campaignName":"DB- Magnesium \"pure magnesium glycinate\" GT SPKE; t=allDay mn=60","theme":"pure magnesium glycinate","matchType":"SPKE","impressions":11374,"clicks":394,"spend":2196.23,"sales":2455.38,"units":98,"orders":92,"ctr":0.0346,"cvr":0.2335,"acos":0.8945,"roas":1.12},{"campaignName":"DB- Magnesium G SPKB; mn=50","theme":null,"matchType":null,"impressions":17419,"clicks":624,"spend":1435.47,"sales":1972.76,"units":78,"orders":73,"ctr":0.0358,"cvr":0.117,"acos":0.7276,"roas":1.37},{"campaignName":"DB- Magnesium \"pure magnesium\" GT SPKE; t=allDay mn=30","theme":"pure magnesium","matchType":"SPKE","impressions":4161,"clicks":178,"spend":938.19,"sales":1644.05,"units":65,"orders":62,"ctr":0.0428,"cvr":0.3483,"acos":0.5707,"roas":1.75},{"campaignName":"DB- Magnesium \"magnesium 200mg\" GT SPKE; t=allDay mn=30","theme":"magnesium 200mg","matchType":"SPKE","impressions":10175,"clicks":159,"spend":934.24,"sales":1212.76,"units":48,"orders":48,"ctr":0.0156,"cvr":0.3019,"acos":0.7703,"roas":1.3}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":294148,"clicks":4549,"spend":18598.01,"sales":25035.62,"units":995,"orders":956,"ctr":0.0155,"cvr":0.2102,"acos":0.7429,"roas":1.35},{"adType":"SD","label":"Sponsored Display","impressions":46461,"clicks":68,"spend":363.17,"sales":426.49,"units":17,"orders":17,"ctr":0.0015,"cvr":0.25,"acos":0.8515,"roas":1.17},{"adType":"SBV","label":"Sponsored Brands Video","impressions":3749,"clicks":9,"spend":22.71,"sales":25.27,"units":1,"orders":1,"ctr":0.0024,"cvr":0.1111,"acos":0.8987,"roas":1.11}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":206461,"clicks":3111,"spend":15184.04,"sales":19200.95,"ctr":0.0151,"cvr":0.2375,"acos":0.7908,"roas":1.26},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":61637,"clicks":550,"spend":1546.97,"sales":2789.1,"ctr":0.0089,"cvr":0.1873,"acos":0.5546,"roas":1.8},{"key":"broad","label":"Broad match","impressions":17232,"clicks":624,"spend":1435.47,"sales":2021.3,"ctr":0.0362,"cvr":0.1202,"acos":0.7102,"roas":1.41},{"key":"auto","label":"Auto targeting","impressions":12567,"clicks":273,"spend":454.24,"sales":1049.54,"ctr":0.0217,"cvr":0.1465,"acos":0.4328,"roas":2.31},{"key":"display_targeting","label":"Display targeting","impressions":46461,"clicks":68,"spend":363.17,"sales":426.49,"ctr":0.0015,"cvr":0.25,"acos":0.8515,"roas":1.17}],"bsrTrend":[{"period":"2026-06-14","rank":164},{"period":"2026-06-21","rank":161},{"period":"2026-06-28","rank":161},{"period":"2026-07-05","rank":161},{"period":"2026-07-12","rank":158},{"period":"2026-07-19","rank":158},{"period":"2026-07-26","rank":151},{"period":"2026-08-02","rank":130},{"period":"2026-08-09","rank":135}],"bsrSummary":{"category":"Magnesium","current":135,"currentDate":"2026-08-09","rank30dAgo":158,"date30dAgo":"2026-07-10","rankEarliest":164,"dateEarliest":"2026-06-16","pctChange30d":14.6,"pctChangeFull":17.7,"trend":"up"},"metrics7d":{"sessions":5267,"totalUnits":1388,"totalSales":33620.33,"impressions":75532,"clicks":1232,"adSpend":5385.6,"adSales":6443.65,"adUnits":265,"adOrders":255,"ctr":0.0163,"cvr":0.207,"acos":0.8358,"tacos":16.02,"roas":1.2},"cogsPerUnit":5.05,"cogsAsOf":"10/04/2026"},{"asin":"B00NQTP53Y","sku":"IRON-PLUS-FBA1","category":"Iron","bsr":48,"sessions":20103,"totalUnits":3305,"totalSales":80075.87,"impressions":205622,"clicks":3527,"adSpend":11832.6,"adSales":18271.85,"adUnits":755,"adOrders":743,"ctr":0.0172,"cvr":0.2107,"acos":0.6476,"roas":1.54,"tacos":14.78,"weekly":[{"period":"2026-07-12","sessions":4756,"units":758,"sales":18927.26},{"period":"2026-07-19","sessions":4857,"units":717,"sales":17903.49},{"period":"2026-07-26","sessions":4420,"units":770,"sales":19221.86},{"period":"2026-08-02","sessions":5388,"units":931,"sales":21124.63},{"period":"2026-08-09","sessions":682,"units":129,"sales":2898.63}],"campaigns":[{"campaignName":"Iron |DB standard","theme":null,"matchType":null,"impressions":141623,"clicks":930,"spend":2917.55,"sales":4266.19,"units":177,"orders":174,"ctr":0.0066,"cvr":0.1871,"acos":0.6839,"roas":1.46},{"campaignName":"DB- Iron \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":8978,"clicks":927,"spend":2806.56,"sales":3312.89,"units":137,"orders":136,"ctr":0.1033,"cvr":0.1467,"acos":0.8472,"roas":1.18},{"campaignName":"DB- Iron \"iron supplement woman\" GT SPKE:maintenance","theme":"iron supplement woman","matchType":"SPKE","impressions":5118,"clicks":340,"spend":1593.02,"sales":2446.97,"units":101,"orders":99,"ctr":0.0664,"cvr":0.2912,"acos":0.651,"roas":1.54},{"campaignName":"B00NQTP53Y \"iron plus\" |DB keyphrase","theme":"iron plus","matchType":null,"impressions":27058,"clicks":330,"spend":1163.04,"sales":2804.02,"units":116,"orders":112,"ctr":0.0122,"cvr":0.3394,"acos":0.4148,"roas":2.41},{"campaignName":"DB- Iron \"iron supplement\" GT SPKE","theme":"iron supplement","matchType":"SPKE","impressions":3197,"clicks":230,"spend":1073.95,"sales":1695.43,"units":69,"orders":69,"ctr":0.0719,"cvr":0.3,"acos":0.6334,"roas":1.58},{"campaignName":"B00NQTP53Y \"iron pill woman\" |DB keyphrase","theme":"iron pill woman","matchType":null,"impressions":1402,"clicks":137,"spend":664.6,"sales":1041.21,"units":43,"orders":43,"ctr":0.0977,"cvr":0.3139,"acos":0.6383,"roas":1.57}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":205639,"clicks":3528,"spend":11835.75,"sales":18453.11,"units":763,"orders":751,"ctr":0.0172,"cvr":0.2129,"acos":0.6414,"roas":1.56}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":181248,"clicks":2163,"spend":8213.23,"sales":13402.38,"ctr":0.0119,"cvr":0.2515,"acos":0.6128,"roas":1.63},{"key":"auto","label":"Auto targeting","impressions":13224,"clicks":1096,"spend":2977.73,"sales":4204.28,"ctr":0.0829,"cvr":0.1578,"acos":0.7083,"roas":1.41},{"key":"broad","label":"Broad match","impressions":11096,"clicks":268,"spend":642.02,"sales":846.45,"ctr":0.0242,"cvr":0.1269,"acos":0.7585,"roas":1.32},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":71,"clicks":1,"spend":2.77,"sales":0,"ctr":0.0141,"cvr":0.0,"acos":999,"roas":0.0}],"bsrTrend":[{"period":"2026-06-14","rank":54},{"period":"2026-06-21","rank":53},{"period":"2026-06-28","rank":52},{"period":"2026-07-05","rank":51},{"period":"2026-07-12","rank":57},{"period":"2026-07-19","rank":54},{"period":"2026-07-26","rank":55},{"period":"2026-08-02","rank":53},{"period":"2026-08-09","rank":48}],"bsrSummary":{"category":"Iron","current":48,"currentDate":"2026-08-09","rank30dAgo":51,"date30dAgo":"2026-07-10","rankEarliest":59,"dateEarliest":"2026-06-16","pctChange30d":5.9,"pctChangeFull":18.6,"trend":"up"},"metrics7d":{"sessions":5182,"totalUnits":923,"totalSales":20717.34,"impressions":50141,"clicks":898,"adSpend":2764.15,"adSales":4450.56,"adUnits":198,"adOrders":194,"ctr":0.0179,"cvr":0.216,"acos":0.6211,"tacos":13.34,"roas":1.61},"cogsPerUnit":4.69,"cogsAsOf":"19/05/2026"},{"asin":"B017L2H4EY","sku":"TJ-MTZ6-FBA1","category":"Zinc","bsr":63,"sessions":7457,"totalUnits":1894,"totalSales":42410.59,"impressions":173494,"clicks":1964,"adSpend":8092.54,"adSales":10252.42,"adUnits":456,"adOrders":445,"ctr":0.0113,"cvr":0.2266,"acos":0.7893,"roas":1.27,"tacos":19.08,"weekly":[{"period":"2026-07-12","sessions":1611,"units":407,"sales":8917.6},{"period":"2026-07-19","sessions":2035,"units":512,"sales":11237.21},{"period":"2026-07-26","sessions":1632,"units":445,"sales":9794.42},{"period":"2026-08-02","sessions":1957,"units":463,"sales":10855.37},{"period":"2026-08-09","sessions":222,"units":67,"sales":1605.99}],"campaigns":[{"campaignName":"DB- Pure_Zinc \"zinc bisglycinate\" GT SPKE; t=allDay mn=60","theme":"zinc bisglycinate","matchType":"SPKE","impressions":69751,"clicks":419,"spend":1920.43,"sales":2250.5,"units":100,"orders":97,"ctr":0.006,"cvr":0.2315,"acos":0.8533,"roas":1.17},{"campaignName":"DB- Pure_Zinc G SPKB","theme":null,"matchType":null,"impressions":34802,"clicks":441,"spend":1358.96,"sales":1862.54,"units":82,"orders":82,"ctr":0.0127,"cvr":0.1859,"acos":0.7296,"roas":1.37},{"campaignName":"DB- Pure_Zinc G SPKE:TOS","theme":null,"matchType":"SPKE","impressions":915,"clicks":143,"spend":808.11,"sales":864.83,"units":39,"orders":39,"ctr":0.1563,"cvr":0.2727,"acos":0.9344,"roas":1.07},{"campaignName":"DB- Pure_Zinc \"zinc 25mg\" GT SPKE; t=allDay mn=40","theme":"zinc 25mg","matchType":"SPKE","impressions":14803,"clicks":125,"spend":601.8,"sales":808.92,"units":36,"orders":36,"ctr":0.0084,"cvr":0.288,"acos":0.744,"roas":1.34},{"campaignName":"DB- Pure_Zinc \"pure zinc\" GT SPKE; t=allDay mn=40","theme":"pure zinc","matchType":"SPKE","impressions":923,"clicks":67,"spend":538.87,"sales":1012.65,"units":45,"orders":43,"ctr":0.0726,"cvr":0.6418,"acos":0.5321,"roas":1.88},{"campaignName":"DB- Pure_Zinc \"zinc supplement\" GT SPKE:maintenance","theme":"zinc supplement","matchType":"SPKE","impressions":6592,"clicks":88,"spend":401.43,"sales":451.4,"units":20,"orders":19,"ctr":0.0133,"cvr":0.2159,"acos":0.8893,"roas":1.12}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":173275,"clicks":1964,"spend":8092.54,"sales":10492.12,"units":466,"orders":455,"ctr":0.0113,"cvr":0.2317,"acos":0.7713,"roas":1.3}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":123724,"clicks":1260,"spend":6121.11,"sales":7618.63,"ctr":0.0102,"cvr":0.2635,"acos":0.8034,"roas":1.24},{"key":"broad","label":"Broad match","impressions":34721,"clicks":441,"spend":1358.96,"sales":1910.48,"ctr":0.0127,"cvr":0.1905,"acos":0.7113,"roas":1.41},{"key":"auto","label":"Auto targeting","impressions":10090,"clicks":221,"spend":506.68,"sales":853.16,"ctr":0.0219,"cvr":0.1538,"acos":0.5939,"roas":1.68},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":4740,"clicks":42,"spend":105.79,"sales":109.85,"ctr":0.0089,"cvr":0.119,"acos":0.963,"roas":1.04}],"bsrTrend":[{"period":"2026-06-14","rank":60},{"period":"2026-06-21","rank":56},{"period":"2026-06-28","rank":56},{"period":"2026-07-05","rank":61},{"period":"2026-07-12","rank":62},{"period":"2026-07-19","rank":59},{"period":"2026-07-26","rank":61},{"period":"2026-08-02","rank":65},{"period":"2026-08-09","rank":63}],"bsrSummary":{"category":"Zinc","current":63,"currentDate":"2026-08-09","rank30dAgo":60,"date30dAgo":"2026-07-10","rankEarliest":62,"dateEarliest":"2026-06-16","pctChange30d":-5.0,"pctChangeFull":-1.6,"trend":"flat"},"metrics7d":{"sessions":1732,"totalUnits":434,"totalSales":10355.04,"impressions":48267,"clicks":462,"adSpend":1898.05,"adSales":2419.27,"adUnits":101,"adOrders":100,"ctr":0.0096,"cvr":0.2165,"acos":0.7846,"tacos":18.33,"roas":1.27},"cogsPerUnit":3.68,"cogsAsOf":"25/07/2025"},{"asin":"B0731BD7DR","sku":"ORG-CURC-FBA60","category":"Turmeric","bsr":134,"sessions":4234,"totalUnits":769,"totalSales":20739.93,"impressions":58901,"clicks":839,"adSpend":3497.51,"adSales":4499.99,"adUnits":167,"adOrders":156,"ctr":0.0142,"cvr":0.1859,"acos":0.7772,"roas":1.29,"tacos":16.86,"weekly":[{"period":"2026-07-12","sessions":1285,"units":197,"sales":5313.09},{"period":"2026-07-19","sessions":976,"units":179,"sales":4827.63},{"period":"2026-07-26","sessions":947,"units":167,"sales":4503.99},{"period":"2026-08-02","sessions":909,"units":202,"sales":5447.94},{"period":"2026-08-09","sessions":117,"units":24,"sales":647.28}],"campaigns":[{"campaignName":"DB- Curcumin \"curcumin with black pepper\" GT SPKE","theme":"curcumin with black pepper","matchType":"SPKE","impressions":1233,"clicks":119,"spend":670.82,"sales":591.34,"units":22,"orders":21,"ctr":0.0965,"cvr":0.1765,"acos":1.1344,"roas":0.88},{"campaignName":"DB- Curcumin \"organic curcumin\" GT SPKB","theme":"organic curcumin","matchType":null,"impressions":417,"clicks":127,"spend":600.53,"sales":728.19,"units":27,"orders":25,"ctr":0.3046,"cvr":0.1969,"acos":0.8247,"roas":1.21},{"campaignName":"B0731BD7DR \"curcumin\" |DB keyphrase","theme":"curcumin","matchType":null,"impressions":1176,"clicks":80,"spend":495.66,"sales":559.37,"units":21,"orders":20,"ctr":0.068,"cvr":0.25,"acos":0.8861,"roas":1.13},{"campaignName":"Curcumin |DB standard","theme":null,"matchType":null,"impressions":19641,"clicks":116,"spend":410.6,"sales":653.28,"units":24,"orders":22,"ctr":0.0059,"cvr":0.1897,"acos":0.6285,"roas":1.59},{"campaignName":"DB- Curcumin \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":18011,"clicks":169,"spend":387.69,"sales":566.37,"units":21,"orders":19,"ctr":0.0094,"cvr":0.1124,"acos":0.6845,"roas":1.46},{"campaignName":"B0731BD7DR \"organic curcumin\" |DB keyphrase","theme":"organic curcumin","matchType":null,"impressions":391,"clicks":59,"spend":318.08,"sales":539.4,"units":20,"orders":19,"ctr":0.1509,"cvr":0.322,"acos":0.5897,"roas":1.7}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":58341,"clicks":839,"spend":3497.51,"sales":4499.99,"units":167,"orders":156,"ctr":0.0144,"cvr":0.1859,"acos":0.7772,"roas":1.29}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":22692,"clicks":419,"spend":2193.15,"sales":2698.0,"ctr":0.0185,"cvr":0.2267,"acos":0.8129,"roas":1.23},{"key":"broad","label":"Broad match","impressions":417,"clicks":127,"spend":600.53,"sales":728.19,"ctr":0.3046,"cvr":0.1969,"acos":0.8247,"roas":1.21},{"key":"auto","label":"Auto targeting","impressions":18355,"clicks":186,"spend":416.76,"sales":566.37,"ctr":0.0101,"cvr":0.1022,"acos":0.7358,"roas":1.36},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":16877,"clicks":107,"spend":287.07,"sales":507.43,"ctr":0.0063,"cvr":0.1589,"acos":0.5657,"roas":1.77}],"bsrTrend":[{"period":"2026-06-14","rank":125},{"period":"2026-06-21","rank":125},{"period":"2026-06-28","rank":123},{"period":"2026-07-05","rank":128},{"period":"2026-07-12","rank":124},{"period":"2026-07-19","rank":131},{"period":"2026-07-26","rank":135},{"period":"2026-08-02","rank":132},{"period":"2026-08-09","rank":134}],"bsrSummary":{"category":"Turmeric","current":134,"currentDate":"2026-08-09","rank30dAgo":118,"date30dAgo":"2026-07-10","rankEarliest":122,"dateEarliest":"2026-06-16","pctChange30d":-13.6,"pctChangeFull":-9.8,"trend":"down"},"metrics7d":{"sessions":895,"totalUnits":193,"totalSales":5205.21,"impressions":7000,"clicks":117,"adSpend":480.37,"adSales":978.92,"adUnits":36,"adOrders":33,"ctr":0.0167,"cvr":0.2821,"acos":0.4907,"tacos":9.23,"roas":2.04},"cogsPerUnit":4.83,"cogsAsOf":"02/06/2026"},{"asin":"B09QZGV5YZ","sku":"BLYS-MAG-UW120","category":"Magnesium","bsr":677,"sessions":1575,"totalUnits":644,"totalSales":14792.68,"impressions":62150,"clicks":886,"adSpend":2581.48,"adSales":2484.79,"adUnits":108,"adOrders":104,"ctr":0.0143,"cvr":0.1174,"acos":1.0389,"roas":0.96,"tacos":17.45,"weekly":[{"period":"2026-07-12","sessions":404,"units":167,"sales":3835.99},{"period":"2026-07-19","sessions":402,"units":152,"sales":3491.44},{"period":"2026-07-26","sessions":356,"units":140,"sales":3215.8},{"period":"2026-08-02","sessions":354,"units":154,"sales":3537.38},{"period":"2026-08-09","sessions":59,"units":31,"sales":712.07}],"campaigns":[{"campaignName":"DB- Unwind \"magnesium bisglycinate\" GT SPKE","theme":"magnesium bisglycinate","matchType":"SPKE","impressions":47605,"clicks":556,"spend":1581.23,"sales":1451.11,"units":63,"orders":63,"ctr":0.0117,"cvr":0.1133,"acos":1.0897,"roas":0.92},{"campaignName":"DB- Unwind \"blyss\" GT SPKB","theme":"blyss","matchType":null,"impressions":6059,"clicks":57,"spend":267.18,"sales":436.43,"units":19,"orders":16,"ctr":0.0094,"cvr":0.2807,"acos":0.6122,"roas":1.63},{"campaignName":"DB- Unwind \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":619,"clicks":119,"spend":222.16,"sales":114.85,"units":5,"orders":5,"ctr":0.1922,"cvr":0.042,"acos":1.9343,"roas":0.52},{"campaignName":"DB- Unwind G SPKE","theme":null,"matchType":"SPKE","impressions":2088,"clicks":44,"spend":138.93,"sales":114.85,"units":5,"orders":5,"ctr":0.0211,"cvr":0.1136,"acos":1.2097,"roas":0.83},{"campaignName":"DBx Unwind G SBVKE","theme":null,"matchType":null,"impressions":2823,"clicks":42,"spend":120.43,"sales":114.85,"units":5,"orders":4,"ctr":0.0149,"cvr":0.0952,"acos":1.0486,"roas":0.95},{"campaignName":"DB- Unwind \"magnesium glycinate\" GT SPKE","theme":"magnesium glycinate","matchType":"SPKE","impressions":2717,"clicks":35,"spend":105.8,"sales":91.88,"units":4,"orders":4,"ctr":0.0129,"cvr":0.1143,"acos":1.1515,"roas":0.87}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":59303,"clicks":844,"spend":2461.05,"sales":2369.94,"units":103,"orders":100,"ctr":0.0142,"cvr":0.1185,"acos":1.0384,"roas":0.96},{"adType":"SBV","label":"Sponsored Brands Video","impressions":2823,"clicks":42,"spend":120.43,"sales":114.85,"units":5,"orders":4,"ctr":0.0149,"cvr":0.0952,"acos":1.0486,"roas":0.95}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":55279,"clicks":683,"spend":1984.31,"sales":1772.69,"ctr":0.0124,"cvr":0.1113,"acos":1.1194,"roas":0.89},{"key":"broad","label":"Broad match","impressions":6028,"clicks":57,"spend":267.18,"sales":436.43,"ctr":0.0095,"cvr":0.2807,"acos":0.6122,"roas":1.63},{"key":"auto","label":"Auto targeting","impressions":628,"clicks":123,"spend":224.03,"sales":160.79,"ctr":0.1959,"cvr":0.0569,"acos":1.3933,"roas":0.72},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":191,"clicks":23,"spend":105.96,"sales":114.88,"ctr":0.1204,"cvr":0.2174,"acos":0.9224,"roas":1.08}],"bsrTrend":[{"period":"2026-06-14","rank":726},{"period":"2026-06-21","rank":730},{"period":"2026-06-28","rank":768},{"period":"2026-07-05","rank":722},{"period":"2026-07-12","rank":774},{"period":"2026-07-19","rank":682},{"period":"2026-07-26","rank":778},{"period":"2026-08-02","rank":774},{"period":"2026-08-09","rank":677}],"bsrSummary":{"category":"Magnesium","current":677,"currentDate":"2026-08-09","rank30dAgo":674,"date30dAgo":"2026-07-10","rankEarliest":735,"dateEarliest":"2026-06-16","pctChange30d":-0.4,"pctChangeFull":7.9,"trend":"up"},"metrics7d":{"sessions":361,"totalUnits":151,"totalSales":3468.47,"impressions":15025,"clicks":188,"adSpend":609.69,"adSales":528.34,"adUnits":23,"adOrders":22,"ctr":0.0125,"cvr":0.117,"acos":1.154,"tacos":17.58,"roas":0.87},"cogsPerUnit":3.99,"cogsAsOf":"23/03/2022"},{"asin":"B086VWFTQ7","sku":"ORG-RES-FBA90","category":"Resveratrol","bsr":125,"sessions":2875,"totalUnits":386,"totalSales":13498.42,"impressions":46777,"clicks":796,"adSpend":1726.87,"adSales":2258.05,"adUnits":65,"adOrders":63,"ctr":0.017,"cvr":0.0791,"acos":0.7648,"roas":1.31,"tacos":12.79,"weekly":[{"period":"2026-07-12","sessions":678,"units":90,"sales":3147.3},{"period":"2026-07-19","sessions":638,"units":93,"sales":3252.21},{"period":"2026-07-26","sessions":759,"units":104,"sales":3636.88},{"period":"2026-08-02","sessions":697,"units":85,"sales":2972.45},{"period":"2026-08-09","sessions":103,"units":14,"sales":489.58}],"campaigns":[{"campaignName":"DB- Resveratrol \"resveratrol\" GT SPKE","theme":"resveratrol","matchType":"SPKE","impressions":25020,"clicks":227,"spend":457.42,"sales":664.43,"units":19,"orders":19,"ctr":0.0091,"cvr":0.0837,"acos":0.6884,"roas":1.45},{"campaignName":"DB- Resveratrol \"organic resveratrol\" GT SPKE","theme":"organic resveratrol","matchType":"SPKE","impressions":8336,"clicks":98,"spend":390.24,"sales":559.52,"units":16,"orders":16,"ctr":0.0118,"cvr":0.1633,"acos":0.6975,"roas":1.43},{"campaignName":"DB- Resveratrol \"SPAAS\" GT SPA","theme":"SPAAS","matchType":"SPA","impressions":1087,"clicks":177,"spend":251.91,"sales":409.64,"units":12,"orders":12,"ctr":0.1628,"cvr":0.0678,"acos":0.615,"roas":1.63},{"campaignName":"DB- Resveratrol \"SPAAC\" GT SPA","theme":"SPAAC","matchType":"SPA","impressions":1632,"clicks":106,"spend":202.14,"sales":174.85,"units":5,"orders":4,"ctr":0.065,"cvr":0.0377,"acos":1.1561,"roas":0.86},{"campaignName":"DB- Resveratrol G SPKE","theme":null,"matchType":"SPKE","impressions":4464,"clicks":77,"spend":193.69,"sales":309.73,"units":9,"orders":8,"ctr":0.0172,"cvr":0.1039,"acos":0.6254,"roas":1.6},{"campaignName":"DB- Resveratrol \"organic resveratrol supplement\" GT SPKE","theme":"organic resveratrol supplement","matchType":"SPKE","impressions":3774,"clicks":35,"spend":99.8,"sales":69.94,"units":2,"orders":2,"ctr":0.0093,"cvr":0.0571,"acos":1.4269,"roas":0.7}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":46720,"clicks":796,"spend":1726.87,"sales":2258.05,"units":65,"orders":63,"ctr":0.017,"cvr":0.0791,"acos":0.7648,"roas":1.31}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":43989,"clicks":502,"spend":1257.88,"sales":1673.56,"ctr":0.0114,"cvr":0.0936,"acos":0.7516,"roas":1.33},{"key":"auto","label":"Auto targeting","impressions":2731,"clicks":294,"spend":468.99,"sales":584.49,"ctr":0.1077,"cvr":0.0544,"acos":0.8024,"roas":1.25}],"bsrTrend":[{"period":"2026-06-14","rank":101},{"period":"2026-06-21","rank":105},{"period":"2026-06-28","rank":101},{"period":"2026-07-05","rank":107},{"period":"2026-07-12","rank":119},{"period":"2026-07-19","rank":122},{"period":"2026-07-26","rank":136},{"period":"2026-08-02","rank":132},{"period":"2026-08-09","rank":125}],"bsrSummary":{"category":"Resveratrol","current":125,"currentDate":"2026-08-09","rank30dAgo":115,"date30dAgo":"2026-07-10","rankEarliest":117,"dateEarliest":"2026-06-16","pctChange30d":-8.7,"pctChangeFull":-6.8,"trend":"down"},"metrics7d":{"sessions":699,"totalUnits":94,"totalSales":3287.18,"impressions":8413,"clicks":149,"adSpend":329.16,"adSales":479.58,"adUnits":14,"adOrders":13,"ctr":0.0177,"cvr":0.0872,"acos":0.6864,"tacos":10.01,"roas":1.46},"cogsPerUnit":6.51,"cogsAsOf":"16/10/2025"},{"asin":"B0DKH9L35B","sku":"VAG-PRO-FBA60","category":"Probiotics","bsr":478,"sessions":4156,"totalUnits":363,"totalSales":10864.11,"impressions":256506,"clicks":280,"adSpend":1073.93,"adSales":1197.8,"adUnits":40,"adOrders":37,"ctr":0.0011,"cvr":0.1321,"acos":0.8966,"roas":1.12,"tacos":9.89,"weekly":[{"period":"2026-07-12","sessions":1129,"units":94,"sales":2802.18},{"period":"2026-07-19","sessions":1075,"units":93,"sales":2787.21},{"period":"2026-07-26","sessions":972,"units":86,"sales":2577.42},{"period":"2026-08-02","sessions":860,"units":75,"sales":2247.75},{"period":"2026-08-09","sessions":120,"units":15,"sales":449.55}],"campaigns":[{"campaignName":"DB- V_Probiotic G SPKE","theme":null,"matchType":"SPKE","impressions":251853,"clicks":188,"spend":750.17,"sales":838.16,"units":28,"orders":25,"ctr":0.0007,"cvr":0.133,"acos":0.895,"roas":1.12},{"campaignName":"DB- V_Probiotic \"SPAQC\" GT SPA","theme":"SPAQC","matchType":"SPA","impressions":4491,"clicks":82,"spend":282.64,"sales":299.7,"units":10,"orders":10,"ctr":0.0183,"cvr":0.122,"acos":0.9431,"roas":1.06},{"campaignName":"DB- V_Probiotic \"B0D5FZGY8W\" GT SPTA","theme":"B0D5FZGY8W","matchType":"SPTA","impressions":155,"clicks":7,"spend":22.94,"sales":59.94,"units":2,"orders":2,"ctr":0.0452,"cvr":0.2857,"acos":0.3827,"roas":2.61},{"campaignName":"DBx V_Probiotic G SPTC","theme":null,"matchType":null,"impressions":6,"clicks":2,"spend":17.72,"sales":0,"units":0,"orders":0,"ctr":0.3333,"cvr":0,"acos":null,"roas":0},{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":1,"clicks":1,"spend":0.46,"sales":0,"units":0,"orders":0,"ctr":1,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Magnesium \"SPAAC\" GT SPA; mn=10","theme":"SPAAC","matchType":"SPA","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":255172,"clicks":280,"spend":1073.93,"sales":1197.8,"units":40,"orders":37,"ctr":0.0011,"cvr":0.1321,"acos":0.8966,"roas":1.12}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":250521,"clicks":188,"spend":750.17,"sales":838.16,"ctr":0.0008,"cvr":0.133,"acos":0.895,"roas":1.12},{"key":"auto","label":"Auto targeting","impressions":4490,"clicks":83,"spend":283.1,"sales":299.7,"ctr":0.0185,"cvr":0.1205,"acos":0.9446,"roas":1.06},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":161,"clicks":9,"spend":40.66,"sales":59.94,"ctr":0.0559,"cvr":0.2222,"acos":0.6783,"roas":1.47}],"bsrTrend":[{"period":"2026-06-14","rank":403},{"period":"2026-06-21","rank":465},{"period":"2026-06-28","rank":506},{"period":"2026-07-05","rank":437},{"period":"2026-07-12","rank":451},{"period":"2026-07-19","rank":467},{"period":"2026-07-26","rank":533},{"period":"2026-08-02","rank":508},{"period":"2026-08-09","rank":478}],"bsrSummary":{"category":"Probiotics","current":478,"currentDate":"2026-08-09","rank30dAgo":467,"date30dAgo":"2026-07-10","rankEarliest":411,"dateEarliest":"2026-06-16","pctChange30d":-2.4,"pctChangeFull":-16.3,"trend":"down"},"metrics7d":{"sessions":812,"totalUnits":83,"totalSales":2487.51,"impressions":112077,"clicks":86,"adSpend":285.6,"adSales":359.64,"adUnits":12,"adOrders":12,"ctr":0.0008,"cvr":0.1395,"acos":0.7941,"tacos":11.48,"roas":1.26},"cogsPerUnit":6.26,"cogsAsOf":"21/07/2026"},{"asin":"B0G4D42W67","sku":"MENO-SUP-FBA60","category":"Menopause","bsr":141,"sessions":5215,"totalUnits":353,"totalSales":10010.55,"impressions":41497,"clicks":981,"adSpend":2154.49,"adSales":1969.93,"adUnits":69,"adOrders":66,"ctr":0.0236,"cvr":0.0673,"acos":1.0937,"roas":0.91,"tacos":21.52,"weekly":[{"period":"2026-07-12","sessions":1335,"units":66,"sales":1970.16},{"period":"2026-07-19","sessions":1254,"units":87,"sales":2535.39},{"period":"2026-07-26","sessions":1218,"units":94,"sales":2535.18},{"period":"2026-08-02","sessions":1220,"units":91,"sales":2520.27},{"period":"2026-08-09","sessions":188,"units":15,"sales":449.55}],"campaigns":[{"campaignName":"DB- Meno_Plus \"SPAAS\" GT SPA","theme":"SPAAS","matchType":"SPA","impressions":2695,"clicks":367,"spend":842.61,"sales":521.46,"units":18,"orders":17,"ctr":0.1362,"cvr":0.0463,"acos":1.6159,"roas":0.62},{"campaignName":"DB- Meno_Plus \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":18003,"clicks":324,"spend":655.97,"sales":825.13,"units":29,"orders":28,"ctr":0.018,"cvr":0.0864,"acos":0.795,"roas":1.26},{"campaignName":"DB- Meno_Plus \"SPAQC\" GT SPA","theme":"SPAQC","matchType":"SPA","impressions":8862,"clicks":151,"spend":303.7,"sales":365.61,"units":13,"orders":12,"ctr":0.017,"cvr":0.0795,"acos":0.8307,"roas":1.2},{"campaignName":"DBx Meno_Plus G SPTC","theme":null,"matchType":null,"impressions":3018,"clicks":46,"spend":99.68,"sales":26.97,"units":1,"orders":1,"ctr":0.0152,"cvr":0.0217,"acos":3.696,"roas":0.27},{"campaignName":"DB- Meno_Plus \"hot flash relief woman\" GT SPKE","theme":"hot flash relief woman","matchType":"SPKE","impressions":5021,"clicks":23,"spend":77.41,"sales":29.97,"units":1,"orders":1,"ctr":0.0046,"cvr":0.0435,"acos":2.5829,"roas":0.39},{"campaignName":"DB- Meno_Plus \"menopause support\" GT SPKE","theme":"menopause support","matchType":"SPKE","impressions":1862,"clicks":28,"spend":56.86,"sales":86.91,"units":3,"orders":3,"ctr":0.015,"cvr":0.1071,"acos":0.6542,"roas":1.53}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":41427,"clicks":982,"spend":2156.39,"sales":1969.93,"units":69,"orders":66,"ctr":0.0237,"cvr":0.0672,"acos":1.0947,"roas":0.91}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":29580,"clicks":851,"spend":1820.18,"sales":1712.2,"ctr":0.0288,"cvr":0.067,"acos":1.0631,"roas":0.94},{"key":"exact","label":"Exact match","impressions":8843,"clicks":77,"spend":220.01,"sales":116.88,"ctr":0.0087,"cvr":0.0519,"acos":1.8824,"roas":0.53},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":2983,"clicks":46,"spend":99.68,"sales":26.97,"ctr":0.0154,"cvr":0.0217,"acos":3.696,"roas":0.27},{"key":"unclassified","label":"Other / unclassified","impressions":21,"clicks":8,"spend":16.52,"sales":113.88,"ctr":0.381,"cvr":0.5,"acos":0.1451,"roas":6.89}],"bsrTrend":[{"period":"2026-06-14","rank":108},{"period":"2026-06-21","rank":107},{"period":"2026-06-28","rank":102},{"period":"2026-07-05","rank":119},{"period":"2026-07-12","rank":119},{"period":"2026-07-19","rank":124},{"period":"2026-07-26","rank":125},{"period":"2026-08-02","rank":131},{"period":"2026-08-09","rank":141}],"bsrSummary":{"category":"Menopause","current":141,"currentDate":"2026-08-09","rank30dAgo":135,"date30dAgo":"2026-07-10","rankEarliest":100,"dateEarliest":"2026-06-16","pctChange30d":-4.4,"pctChangeFull":-41.0,"trend":"down"},"metrics7d":{"sessions":1239,"totalUnits":79,"totalSales":2262.63,"impressions":6291,"clicks":222,"adSpend":478.23,"adSales":458.52,"adUnits":16,"adOrders":16,"ctr":0.0353,"cvr":0.0721,"acos":1.043,"tacos":21.14,"roas":0.96},"cogsPerUnit":7.27,"cogsAsOf":"01/04/2026"},{"asin":"B00NRQDT70","sku":"BONE-S-FBA1","category":"Calcium","bsr":476,"sessions":608,"totalUnits":172,"totalSales":7388.34,"impressions":8114,"clicks":202,"adSpend":830.81,"adSales":1140.99,"adUnits":27,"adOrders":27,"ctr":0.0249,"cvr":0.1337,"acos":0.7281,"roas":1.37,"tacos":11.24,"weekly":[{"period":"2026-07-12","sessions":121,"units":42,"sales":1802.74},{"period":"2026-07-19","sessions":145,"units":39,"sales":1675.83},{"period":"2026-07-26","sessions":132,"units":38,"sales":1632.86},{"period":"2026-08-02","sessions":134,"units":43,"sales":1847.71},{"period":"2026-08-09","sessions":76,"units":10,"sales":429.2}],"campaigns":[{"campaignName":"DB- Calcium G SPKE","theme":null,"matchType":"SPKE","impressions":7344,"clicks":181,"spend":700.43,"sales":987.81,"units":23,"orders":23,"ctr":0.0246,"cvr":0.1271,"acos":0.7091,"roas":1.41},{"campaignName":"DB- Calcium \"bone support\" GT SPKE","theme":"bone support","matchType":"SPKE","impressions":121,"clicks":11,"spend":103.84,"sales":85.94,"units":2,"orders":2,"ctr":0.0909,"cvr":0.1818,"acos":1.2083,"roas":0.83},{"campaignName":"DB- Calcium \"calcium hydroxyapatite supplement\" GT SPKE","theme":"calcium hydroxyapatite supplement","matchType":"SPKE","impressions":3,"clicks":2,"spend":12.3,"sales":42.97,"units":1,"orders":1,"ctr":0.6667,"cvr":0.5,"acos":0.2862,"roas":3.49},{"campaignName":"DBx Calcium G SBVKP:pdp","theme":null,"matchType":null,"impressions":16,"clicks":2,"spend":4.24,"sales":0,"units":0,"orders":0,"ctr":0.125,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Calcium _ _ SDPT:asin:self","theme":null,"matchType":null,"impressions":397,"clicks":2,"spend":3.45,"sales":24.27,"units":1,"orders":1,"ctr":0.005,"cvr":0.5,"acos":0.1422,"roas":7.03},{"campaignName":"DB- Calcium \"B07RF1QQ4H\" GT SPTA","theme":"B07RF1QQ4H","matchType":"SPTA","impressions":229,"clicks":2,"spend":3.12,"sales":0,"units":0,"orders":0,"ctr":0.0087,"cvr":0,"acos":null,"roas":0}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":7692,"clicks":198,"spend":823.12,"sales":1116.72,"units":26,"orders":26,"ctr":0.0257,"cvr":0.1313,"acos":0.7371,"roas":1.36},{"adType":"SBV","label":"Sponsored Brands Video","impressions":16,"clicks":2,"spend":4.24,"sales":0,"units":0,"orders":0,"ctr":0.125,"cvr":0,"acos":null,"roas":0},{"adType":"SD","label":"Sponsored Display","impressions":397,"clicks":2,"spend":3.45,"sales":24.27,"units":1,"orders":1,"ctr":0.005,"cvr":0.5,"acos":0.1422,"roas":7.03}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":7461,"clicks":195,"spend":818.73,"sales":1116.72,"ctr":0.0261,"cvr":0.1333,"acos":0.7332,"roas":1.36},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":231,"clicks":3,"spend":4.39,"sales":0,"ctr":0.013,"cvr":0.0,"acos":999,"roas":0.0},{"key":"phrase","label":"Phrase match","impressions":16,"clicks":2,"spend":4.24,"sales":0,"ctr":0.125,"cvr":0.0,"acos":999,"roas":0.0},{"key":"display_targeting","label":"Display targeting","impressions":397,"clicks":2,"spend":3.45,"sales":24.27,"ctr":0.005,"cvr":0.5,"acos":0.1422,"roas":7.03}],"bsrTrend":[{"period":"2026-06-14","rank":438},{"period":"2026-06-21","rank":415},{"period":"2026-06-28","rank":456},{"period":"2026-07-05","rank":524},{"period":"2026-07-12","rank":520},{"period":"2026-07-19","rank":516},{"period":"2026-07-26","rank":499},{"period":"2026-08-02","rank":487},{"period":"2026-08-09","rank":476}],"bsrSummary":{"category":"Calcium","current":476,"currentDate":"2026-08-09","rank30dAgo":445,"date30dAgo":"2026-07-10","rankEarliest":502,"dateEarliest":"2026-06-16","pctChange30d":-7.0,"pctChangeFull":5.2,"trend":"up"},"metrics7d":{"sessions":196,"totalUnits":44,"totalSales":1890.18,"impressions":2315,"clicks":58,"adSpend":246,"adSales":410.5,"adUnits":10,"adOrders":10,"ctr":0.0251,"cvr":0.1724,"acos":0.5993,"tacos":13.01,"roas":1.67},"cogsPerUnit":10.21,"cogsAsOf":"10/12/2025"},{"asin":"B07N1MPVKT","sku":"5HTP-FBA60","category":"5-HTP","bsr":60,"sessions":845,"totalUnits":287,"totalSales":7166.39,"impressions":13788,"clicks":358,"adSpend":1216.31,"adSales":1398.32,"adUnits":56,"adOrders":56,"ctr":0.026,"cvr":0.1564,"acos":0.8698,"roas":1.15,"tacos":16.97,"weekly":[{"period":"2026-07-12","sessions":256,"units":82,"sales":2047.54},{"period":"2026-07-19","sessions":213,"units":61,"sales":1523.17},{"period":"2026-07-26","sessions":195,"units":70,"sales":1747.9},{"period":"2026-08-02","sessions":149,"units":61,"sales":1523.17},{"period":"2026-08-09","sessions":32,"units":13,"sales":324.61}],"campaigns":[{"campaignName":"DB- 5_HTP \"B07N1MPVKT\" GT SPTA:defensive","theme":"B07N1MPVKT","matchType":"SPTA","impressions":805,"clicks":99,"spend":530.24,"sales":774.07,"units":31,"orders":31,"ctr":0.123,"cvr":0.3131,"acos":0.685,"roas":1.46},{"campaignName":"DB- 5_HTP \"5 htp\" GT SPKE","theme":"5 htp","matchType":"SPKE","impressions":6673,"clicks":48,"spend":189.17,"sales":24.97,"units":1,"orders":1,"ctr":0.0072,"cvr":0.0208,"acos":7.5759,"roas":0.13},{"campaignName":"DBx \"saffron supplement\" T SBPKE:page_visit; mn=60","theme":"saffron supplement","matchType":null,"impressions":3526,"clicks":25,"spend":132.53,"sales":99.88,"units":4,"orders":4,"ctr":0.0071,"cvr":0.16,"acos":1.3269,"roas":0.75},{"campaignName":"DB- 5_HTP G SPKE","theme":null,"matchType":"SPKE","impressions":750,"clicks":49,"spend":123.84,"sales":124.85,"units":5,"orders":5,"ctr":0.0653,"cvr":0.102,"acos":0.9919,"roas":1.01},{"campaignName":"DB- 5_HTP Gt SPA","theme":null,"matchType":"SPA","impressions":981,"clicks":100,"spend":123.67,"sales":149.82,"units":6,"orders":6,"ctr":0.1019,"cvr":0.06,"acos":0.8255,"roas":1.21},{"campaignName":"DB- 5_HTP \"5htp\" GT SPKE","theme":"5htp","matchType":"SPKE","impressions":489,"clicks":13,"spend":63.03,"sales":74.91,"units":3,"orders":3,"ctr":0.0266,"cvr":0.2308,"acos":0.8414,"roas":1.19}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":9726,"clicks":319,"spend":1050.74,"sales":1273.47,"units":51,"orders":51,"ctr":0.0328,"cvr":0.1599,"acos":0.8251,"roas":1.21},{"adType":"SB","label":"Sponsored Brands","impressions":3526,"clicks":25,"spend":132.53,"sales":99.88,"units":4,"orders":4,"ctr":0.0071,"cvr":0.16,"acos":1.3269,"roas":0.75},{"adType":"SBV","label":"Sponsored Brands Video","impressions":536,"clicks":14,"spend":33.04,"sales":49.94,"units":2,"orders":2,"ctr":0.0261,"cvr":0.1429,"acos":0.6616,"roas":1.51}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":11974,"clicks":149,"spend":541.61,"sales":374.55,"ctr":0.0124,"cvr":0.1007,"acos":1.446,"roas":0.69},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":805,"clicks":99,"spend":530.24,"sales":774.07,"ctr":0.123,"cvr":0.3131,"acos":0.685,"roas":1.46},{"key":"auto","label":"Auto targeting","impressions":1003,"clicks":105,"spend":126.01,"sales":199.76,"ctr":0.1047,"cvr":0.0762,"acos":0.6308,"roas":1.59},{"key":"phrase","label":"Phrase match","impressions":6,"clicks":5,"spend":18.45,"sales":74.91,"ctr":0.8333,"cvr":0.6,"acos":0.2463,"roas":4.06}],"bsrTrend":[{"period":"2026-06-14","rank":61},{"period":"2026-06-21","rank":54},{"period":"2026-06-28","rank":65},{"period":"2026-07-05","rank":62},{"period":"2026-07-12","rank":65},{"period":"2026-07-19","rank":61},{"period":"2026-07-26","rank":70},{"period":"2026-08-02","rank":65},{"period":"2026-08-09","rank":60}],"bsrSummary":{"category":"5-HTP","current":60,"currentDate":"2026-08-09","rank30dAgo":60,"date30dAgo":"2026-07-10","rankEarliest":60,"dateEarliest":"2026-06-16","pctChange30d":0.0,"pctChangeFull":0.0,"trend":"flat"},"metrics7d":{"sessions":167,"totalUnits":64,"totalSales":1598.08,"impressions":633,"clicks":34,"adSpend":122.77,"adSales":224.73,"adUnits":9,"adOrders":9,"ctr":0.0537,"cvr":0.2647,"acos":0.5463,"tacos":7.68,"roas":1.83},"cogsPerUnit":4.46,"cogsAsOf":"13/03/2025"},{"asin":"B0BX35TNYD","sku":"PDS-HIPJOINT-CHW90","category":"Hip & Joint Care","bsr":508,"sessions":1873,"totalUnits":148,"totalSales":5621.56,"impressions":9448,"clicks":105,"adSpend":729.62,"adSales":298.76,"adUnits":8,"adOrders":8,"ctr":0.0111,"cvr":0.0762,"acos":2.4422,"roas":0.41,"tacos":12.98,"weekly":[{"period":"2026-07-12","sessions":470,"units":31,"sales":1179.07},{"period":"2026-07-19","sessions":564,"units":44,"sales":1670.68},{"period":"2026-07-26","sessions":378,"units":27,"sales":1025.19},{"period":"2026-08-02","sessions":408,"units":43,"sales":1632.71},{"period":"2026-08-09","sessions":53,"units":3,"sales":113.91}],"campaigns":[{"campaignName":"DB- PD:Hip_Joint G SPKB:competitor-brand","theme":null,"matchType":null,"impressions":4178,"clicks":48,"spend":404.07,"sales":151.88,"units":4,"orders":4,"ctr":0.0115,"cvr":0.0833,"acos":2.6605,"roas":0.38},{"campaignName":"DB- PD:Hip_Joint \"SPAQC\" GT SPA","theme":"SPAQC","matchType":"SPA","impressions":3411,"clicks":28,"spend":176.13,"sales":108.91,"units":3,"orders":3,"ctr":0.0082,"cvr":0.1071,"acos":1.6172,"roas":0.62},{"campaignName":"DB- PD:Hip_Joint G SPKE","theme":null,"matchType":"SPKE","impressions":201,"clicks":9,"spend":73.94,"sales":0,"units":0,"orders":0,"ctr":0.0448,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- PD:Hip_Joint \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":463,"clicks":9,"spend":24.32,"sales":0,"units":0,"orders":0,"ctr":0.0194,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- PD:Hip_Joint \"dog glucosamine\" GT SPKE","theme":"dog glucosamine","matchType":"SPKE","impressions":698,"clicks":3,"spend":22.42,"sales":0,"units":0,"orders":0,"ctr":0.0043,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- PD:Hip_Joint \"pure dog hip joint\" GT SPKE","theme":"pure dog hip joint","matchType":"SPKE","impressions":488,"clicks":4,"spend":17.77,"sales":37.97,"units":1,"orders":1,"ctr":0.0082,"cvr":0.25,"acos":0.468,"roas":2.14}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":9447,"clicks":105,"spend":729.62,"sales":298.76,"units":8,"orders":8,"ctr":0.0111,"cvr":0.0762,"acos":2.4422,"roas":0.41}],"matchTypes":[{"key":"broad","label":"Broad match","impressions":4177,"clicks":48,"spend":404.07,"sales":151.88,"ctr":0.0115,"cvr":0.0833,"acos":2.6605,"roas":0.38},{"key":"auto","label":"Auto targeting","impressions":3883,"clicks":41,"spend":211.42,"sales":108.91,"ctr":0.0106,"cvr":0.0732,"acos":1.9412,"roas":0.52},{"key":"exact","label":"Exact match","impressions":1387,"clicks":16,"spend":114.13,"sales":37.97,"ctr":0.0115,"cvr":0.0625,"acos":3.0058,"roas":0.33}],"bsrTrend":[{"period":"2026-06-14","rank":412},{"period":"2026-06-21","rank":394},{"period":"2026-06-28","rank":509},{"period":"2026-07-05","rank":436},{"period":"2026-07-12","rank":430},{"period":"2026-07-19","rank":443},{"period":"2026-07-26","rank":416},{"period":"2026-08-02","rank":461},{"period":"2026-08-09","rank":508}],"bsrSummary":{"category":"Hip & Joint Care","current":508,"currentDate":"2026-08-09","rank30dAgo":420,"date30dAgo":"2026-07-10","rankEarliest":479,"dateEarliest":"2026-06-16","pctChange30d":-21.0,"pctChangeFull":-6.1,"trend":"down"},"metrics7d":{"sessions":367,"totalUnits":39,"totalSales":1480.83,"impressions":902,"clicks":14,"adSpend":111.34,"adSales":0,"adUnits":0,"adOrders":0,"ctr":0.0155,"cvr":0.0,"acos":999,"tacos":7.52,"roas":0.0},"cogsPerUnit":7.82,"cogsAsOf":"04/06/2026"},{"asin":"B0D4PBTSPX","sku":"MAG-POWDER-FBA","category":"Magnesium","bsr":1682,"sessions":471,"totalUnits":98,"totalSales":2937.06,"impressions":10651,"clicks":220,"adSpend":713.77,"adSales":817.46,"adUnits":28,"adOrders":28,"ctr":0.0207,"cvr":0.1273,"acos":0.8732,"roas":1.15,"tacos":24.3,"weekly":[{"period":"2026-07-12","sessions":123,"units":29,"sales":869.13},{"period":"2026-07-19","sessions":119,"units":25,"sales":749.25},{"period":"2026-07-26","sessions":110,"units":16,"sales":479.52},{"period":"2026-08-02","sessions":103,"units":24,"sales":719.28},{"period":"2026-08-09","sessions":16,"units":4,"sales":119.88}],"campaigns":[{"campaignName":"DB- Magnesium_Powder \"magnesium citrate powder\" GT SPKE","theme":"magnesium citrate powder","matchType":"SPKE","impressions":4572,"clicks":68,"spend":294.14,"sales":389.61,"units":13,"orders":13,"ctr":0.0149,"cvr":0.1912,"acos":0.755,"roas":1.32},{"campaignName":"DB- Magnesium_Powder \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":1139,"clicks":102,"spend":207.95,"sales":367.91,"units":13,"orders":13,"ctr":0.0896,"cvr":0.1275,"acos":0.5652,"roas":1.77},{"campaignName":"DB- Magnesium_Powder \"magnesium powder\" GT SPKE","theme":"magnesium powder","matchType":"SPKE","impressions":4218,"clicks":26,"spend":114.24,"sales":0,"units":0,"orders":0,"ctr":0.0062,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Magnesium_Powder \"magnesium powder sleep\" GT SPKE","theme":"magnesium powder sleep","matchType":"SPKE","impressions":629,"clicks":19,"spend":90.07,"sales":59.94,"units":2,"orders":2,"ctr":0.0302,"cvr":0.1053,"acos":1.5027,"roas":0.67},{"campaignName":"DB- Magnesium_Powder G SPTA","theme":null,"matchType":"SPTA","impressions":92,"clicks":4,"spend":6.87,"sales":0,"units":0,"orders":0,"ctr":0.0435,"cvr":0,"acos":null,"roas":0},{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":1,"clicks":1,"spend":0.5,"sales":0,"units":0,"orders":0,"ctr":1,"cvr":0,"acos":null,"roas":0}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":10669,"clicks":220,"spend":713.77,"sales":817.46,"units":28,"orders":28,"ctr":0.0206,"cvr":0.1273,"acos":0.8732,"roas":1.15}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":9437,"clicks":113,"spend":498.45,"sales":449.55,"ctr":0.012,"cvr":0.1327,"acos":1.1088,"roas":0.9},{"key":"auto","label":"Auto targeting","impressions":1140,"clicks":103,"spend":208.45,"sales":367.91,"ctr":0.0904,"cvr":0.1262,"acos":0.5666,"roas":1.76},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":92,"clicks":4,"spend":6.87,"sales":0,"ctr":0.0435,"cvr":0.0,"acos":999,"roas":0.0}],"bsrTrend":[{"period":"2026-06-14","rank":1800},{"period":"2026-06-21","rank":1865},{"period":"2026-06-28","rank":1782},{"period":"2026-07-05","rank":1739},{"period":"2026-07-12","rank":1681},{"period":"2026-07-19","rank":1962},{"period":"2026-07-26","rank":1959},{"period":"2026-08-02","rank":1847},{"period":"2026-08-09","rank":1682}],"bsrSummary":{"category":"Magnesium","current":1682,"currentDate":"2026-08-09","rank30dAgo":1716,"date30dAgo":"2026-07-10","rankEarliest":1777,"dateEarliest":"2026-06-16","pctChange30d":2.0,"pctChangeFull":5.3,"trend":"up"},"metrics7d":{"sessions":106,"totalUnits":23,"totalSales":689.31,"impressions":1680,"clicks":50,"adSpend":155.97,"adSales":342.94,"adUnits":12,"adOrders":12,"ctr":0.0298,"cvr":0.24,"acos":0.4548,"tacos":22.63,"roas":2.2},"cogsPerUnit":5.78,"cogsAsOf":"17/11/2025"},{"asin":"B086WYQQ8V","sku":"MEGA-ZINC-FBA100","category":"Zinc","bsr":270,"sessions":734,"totalUnits":132,"totalSales":2891.61,"impressions":13069,"clicks":260,"adSpend":481.91,"adSales":656.29,"adUnits":30,"adOrders":28,"ctr":0.0199,"cvr":0.1077,"acos":0.7343,"roas":1.36,"tacos":16.67,"weekly":[{"period":"2026-07-12","sessions":180,"units":26,"sales":571.22},{"period":"2026-07-19","sessions":202,"units":39,"sales":856.83},{"period":"2026-07-26","sessions":212,"units":35,"sales":766.14},{"period":"2026-08-02","sessions":132,"units":28,"sales":612.35},{"period":"2026-08-09","sessions":8,"units":4,"sales":85.07}],"campaigns":[{"campaignName":"DB- Mega_Zinc \"B0918RXWRY\" GT SPTA","theme":"B0918RXWRY","matchType":"SPTA","impressions":7596,"clicks":88,"spend":185.27,"sales":150.98,"units":7,"orders":7,"ctr":0.0116,"cvr":0.0795,"acos":1.2271,"roas":0.81},{"campaignName":"DB- Mega_Zinc Gt SPA","theme":null,"matchType":"SPA","impressions":747,"clicks":100,"spend":137.86,"sales":219.7,"units":10,"orders":10,"ctr":0.1339,"cvr":0.1,"acos":0.6275,"roas":1.59},{"campaignName":"Mega_Zinc |DB standard","theme":null,"matchType":null,"impressions":4680,"clicks":62,"spend":127.97,"sales":131.82,"units":6,"orders":6,"ctr":0.0132,"cvr":0.0968,"acos":0.9708,"roas":1.03},{"campaignName":"B086WYQQ8V \"mega zinc\" |DB keyphrase","theme":"mega zinc","matchType":null,"impressions":6,"clicks":4,"spend":18.99,"sales":87.88,"units":4,"orders":3,"ctr":0.6667,"cvr":0.75,"acos":0.2161,"roas":4.63},{"campaignName":"DB- Mega_Zinc \"B00028N0CA\" GT SPTA","theme":"B00028N0CA","matchType":"SPTA","impressions":3,"clicks":3,"spend":8.88,"sales":65.91,"units":3,"orders":2,"ctr":1,"cvr":0.6667,"acos":0.1347,"roas":7.42},{"campaignName":"B086WYQQ8V \"pure micronutrient zinc\" |DB keyphrase","theme":"pure micronutrient zinc","matchType":null,"impressions":35,"clicks":2,"spend":2.44,"sales":0,"units":0,"orders":0,"ctr":0.0571,"cvr":0,"acos":null,"roas":0}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":13072,"clicks":260,"spend":481.91,"sales":656.29,"units":30,"orders":28,"ctr":0.0199,"cvr":0.1077,"acos":0.7343,"roas":1.36}],"matchTypes":[{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":7601,"clicks":91,"spend":194.15,"sales":216.89,"ctr":0.012,"cvr":0.0989,"acos":0.8952,"roas":1.12},{"key":"auto","label":"Auto targeting","impressions":749,"clicks":101,"spend":138.36,"sales":219.7,"ctr":0.1348,"cvr":0.099,"acos":0.6298,"roas":1.59},{"key":"unclassified","label":"Other / unclassified","impressions":4681,"clicks":62,"spend":127.97,"sales":131.82,"ctr":0.0132,"cvr":0.0968,"acos":0.9708,"roas":1.03},{"key":"phrase","label":"Phrase match","impressions":41,"clicks":6,"spend":21.43,"sales":87.88,"ctr":0.1463,"cvr":0.5,"acos":0.2439,"roas":4.1}],"bsrTrend":[{"period":"2026-06-14","rank":271},{"period":"2026-06-21","rank":303},{"period":"2026-06-28","rank":300},{"period":"2026-07-05","rank":282},{"period":"2026-07-12","rank":301},{"period":"2026-07-19","rank":280},{"period":"2026-07-26","rank":295},{"period":"2026-08-02","rank":311},{"period":"2026-08-09","rank":270}],"bsrSummary":{"category":"Zinc","current":270,"currentDate":"2026-08-09","rank30dAgo":306,"date30dAgo":"2026-07-10","rankEarliest":264,"dateEarliest":"2026-06-16","pctChange30d":11.8,"pctChangeFull":-2.3,"trend":"flat"},"metrics7d":{"sessions":94,"totalUnits":30,"totalSales":647.86,"impressions":171,"clicks":25,"adSpend":37.47,"adSales":43.94,"adUnits":2,"adOrders":2,"ctr":0.1462,"cvr":0.08,"acos":0.8528,"tacos":5.78,"roas":1.17},"cogsPerUnit":3.53,"cogsAsOf":"03/02/2024"},{"asin":"B09B9Y3QSC","sku":"UT-SUPPORT-FBA","category":"Cranberry","bsr":246,"sessions":196,"totalUnits":101,"totalSales":2521.97,"impressions":36588,"clicks":91,"adSpend":815.78,"adSales":149.82,"adUnits":6,"adOrders":6,"ctr":0.0025,"cvr":0.0659,"acos":5.4451,"roas":0.18,"tacos":32.35,"weekly":[{"period":"2026-07-12","sessions":56,"units":28,"sales":699.16},{"period":"2026-07-19","sessions":50,"units":18,"sales":449.46},{"period":"2026-07-26","sessions":60,"units":23,"sales":574.31},{"period":"2026-08-02","sessions":29,"units":31,"sales":774.07},{"period":"2026-08-09","sessions":1,"units":1,"sales":24.97}],"campaigns":[{"campaignName":"DB- D-Mannose \"cranberry pill woman\" GT SPKE","theme":"cranberry pill woman","matchType":"SPKE","impressions":34242,"clicks":66,"spend":628.45,"sales":74.91,"units":3,"orders":3,"ctr":0.0019,"cvr":0.0455,"acos":8.3894,"roas":0.12},{"campaignName":"DB- D-Mannose \"urinary tract health woman\" GT SPKE","theme":"urinary tract health woman","matchType":"SPKE","impressions":2345,"clicks":24,"spend":186.83,"sales":74.91,"units":3,"orders":3,"ctr":0.0102,"cvr":0.125,"acos":2.4941,"roas":0.4},{"campaignName":"DB- D-Mannose G SPA","theme":null,"matchType":"SPA","impressions":1,"clicks":1,"spend":0.5,"sales":0,"units":0,"orders":0,"ctr":1,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Magnesium_Powder \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":36631,"clicks":91,"spend":815.78,"sales":149.82,"units":6,"orders":6,"ctr":0.0025,"cvr":0.0659,"acos":5.4451,"roas":0.18}],"matchTypes":[{"key":"exact","label":"Exact match","impressions":36630,"clicks":90,"spend":815.28,"sales":149.82,"ctr":0.0025,"cvr":0.0667,"acos":5.4417,"roas":0.18},{"key":"auto","label":"Auto targeting","impressions":1,"clicks":1,"spend":0.5,"sales":0,"ctr":1.0,"cvr":0.0,"acos":999,"roas":0.0}],"bsrTrend":[{"period":"2026-06-14","rank":235},{"period":"2026-06-21","rank":218},{"period":"2026-06-28","rank":227},{"period":"2026-07-05","rank":222},{"period":"2026-07-12","rank":256},{"period":"2026-07-19","rank":267},{"period":"2026-07-26","rank":245},{"period":"2026-08-02","rank":244},{"period":"2026-08-09","rank":246}],"bsrSummary":{"category":"Cranberry","current":246,"currentDate":"2026-08-09","rank30dAgo":223,"date30dAgo":"2026-07-10","rankEarliest":238,"dateEarliest":"2026-06-16","pctChange30d":-10.3,"pctChangeFull":-3.4,"trend":"flat"},"metrics7d":{"sessions":21,"totalUnits":27,"totalSales":674.19,"impressions":806,"clicks":5,"adSpend":39.88,"adSales":24.97,"adUnits":1,"adOrders":1,"ctr":0.0062,"cvr":0.2,"acos":1.5971,"tacos":5.92,"roas":0.63},"cogsPerUnit":4.13,"cogsAsOf":"10/04/2026"},{"asin":"B0CQJTNQYM","sku":"D35-VK2-FBA1","category":null,"bsr":354,"sessions":425,"totalUnits":92,"totalSales":2205.24,"impressions":38797,"clicks":271,"adSpend":455.17,"adSales":767.07,"adUnits":31,"adOrders":30,"ctr":0.007,"cvr":0.1107,"acos":0.5934,"roas":1.69,"tacos":20.64,"weekly":[{"period":"2026-07-12","sessions":78,"units":14,"sales":335.58},{"period":"2026-07-19","sessions":111,"units":25,"sales":599.25},{"period":"2026-07-26","sessions":100,"units":28,"sales":671.16},{"period":"2026-08-02","sessions":120,"units":21,"sales":503.37},{"period":"2026-08-09","sessions":16,"units":4,"sales":95.88}],"campaigns":[{"campaignName":"DB- Vit_D3_K2 \"SPAQC\" GT SPA","theme":"SPAQC","matchType":"SPA","impressions":32673,"clicks":128,"spend":258,"sales":542.34,"units":22,"orders":21,"ctr":0.0039,"cvr":0.1641,"acos":0.4757,"roas":2.1},{"campaignName":"DB- Vit_D3_K2 \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":3401,"clicks":80,"spend":112.25,"sales":199.76,"units":8,"orders":8,"ctr":0.0235,"cvr":0.1,"acos":0.5619,"roas":1.78},{"campaignName":"DB- Vit_D3_K2 \"SPAAS\" GT SPA","theme":"SPAAS","matchType":"SPA","impressions":2719,"clicks":60,"spend":80.71,"sales":24.97,"units":1,"orders":1,"ctr":0.0221,"cvr":0.0167,"acos":3.2323,"roas":0.31},{"campaignName":"DB- Vit_D3_K2 G SPKE","theme":null,"matchType":"SPKE","impressions":3,"clicks":2,"spend":3,"sales":0,"units":0,"orders":0,"ctr":0.6667,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Vit_D3_K2 \"SPAAC\" GT SPA","theme":"SPAAC","matchType":"SPA","impressions":1,"clicks":1,"spend":1.21,"sales":0,"units":0,"orders":0,"ctr":1,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Magnesium \"pure magnesium\" GT SPKE; t=allDay mn=30","theme":"pure magnesium","matchType":"SPKE","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":38756,"clicks":271,"spend":455.17,"sales":767.07,"units":31,"orders":30,"ctr":0.007,"cvr":0.1107,"acos":0.5934,"roas":1.69}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":38753,"clicks":269,"spend":452.17,"sales":767.07,"ctr":0.0069,"cvr":0.1115,"acos":0.5895,"roas":1.7},{"key":"exact","label":"Exact match","impressions":3,"clicks":2,"spend":3,"sales":0,"ctr":0.6667,"cvr":0.0,"acos":999,"roas":0.0}],"bsrTrend":[{"period":"2026-06-14","rank":319},{"period":"2026-06-21","rank":330},{"period":"2026-06-28","rank":361},{"period":"2026-07-05","rank":429},{"period":"2026-07-12","rank":377},{"period":"2026-07-19","rank":382},{"period":"2026-07-26","rank":394},{"period":"2026-08-02","rank":397},{"period":"2026-08-09","rank":354}],"bsrSummary":{"category":"subcategory 216950304011","current":354,"currentDate":"2026-08-09","rank30dAgo":463,"date30dAgo":"2026-07-10","rankEarliest":327,"dateEarliest":"2026-06-16","pctChange30d":23.5,"pctChangeFull":-8.3,"trend":"down"},"metrics7d":{"sessions":126,"totalUnits":22,"totalSales":527.34,"impressions":23692,"clicks":78,"adSpend":134.46,"adSales":149.12,"adUnits":6,"adOrders":6,"ctr":0.0033,"cvr":0.0769,"acos":0.9017,"tacos":25.5,"roas":1.11},"cogsPerUnit":4.13,"cogsAsOf":"24/03/2026"},{"asin":"B07WHN6WCQ","sku":"PROSTATE-FBA60","category":"Saw Palmetto","bsr":332,"sessions":122,"totalUnits":59,"totalSales":1886.23,"impressions":5,"clicks":5,"adSpend":2.3,"adSales":0,"adUnits":0,"adOrders":0,"ctr":1,"cvr":0,"acos":null,"roas":0,"tacos":0.12,"weekly":[{"period":"2026-07-12","sessions":26,"units":14,"sales":447.58},{"period":"2026-07-19","sessions":30,"units":11,"sales":351.67},{"period":"2026-07-26","sessions":34,"units":21,"sales":671.37},{"period":"2026-08-02","sessions":32,"units":12,"sales":383.64},{"period":"2026-08-09","sessions":0,"units":1,"sales":31.97}],"campaigns":[{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":5,"clicks":5,"spend":2.3,"sales":0,"units":0,"orders":0,"ctr":1,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Saffron G SPKE; mn=70","theme":null,"matchType":"SPKE","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":5,"clicks":5,"spend":2.3,"sales":0,"units":0,"orders":0,"ctr":1,"cvr":0,"acos":null,"roas":0}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":5,"clicks":5,"spend":2.3,"sales":0,"ctr":1.0,"cvr":0.0,"acos":999,"roas":0.0}],"bsrTrend":[{"period":"2026-06-14","rank":286},{"period":"2026-06-21","rank":380},{"period":"2026-06-28","rank":335},{"period":"2026-07-05","rank":394},{"period":"2026-07-12","rank":337},{"period":"2026-07-19","rank":341},{"period":"2026-07-26","rank":315},{"period":"2026-08-02","rank":367},{"period":"2026-08-09","rank":332}],"bsrSummary":{"category":"Saw Palmetto","current":332,"currentDate":"2026-08-09","rank30dAgo":400,"date30dAgo":"2026-07-10","rankEarliest":348,"dateEarliest":"2026-06-16","pctChange30d":17.0,"pctChangeFull":4.6,"trend":"flat"},"metrics7d":{"sessions":30,"totalUnits":11,"totalSales":351.67,"impressions":0,"clicks":0,"adSpend":0,"adSales":0,"adUnits":0,"adOrders":0,"ctr":null,"cvr":null,"acos":null,"tacos":0.0,"roas":null},"cogsPerUnit":7.3,"cogsAsOf":"01/01/1970"},{"asin":"B086WKKYQL","sku":"GC-L52G-XEJ6","category":"Vitamin C","bsr":843,"sessions":194,"totalUnits":67,"totalSales":1737.37,"impressions":781,"clicks":111,"adSpend":227.53,"adSales":408.52,"adUnits":16,"adOrders":15,"ctr":0.1421,"cvr":0.1351,"acos":0.557,"roas":1.8,"tacos":13.1,"weekly":[{"period":"2026-07-12","sessions":55,"units":18,"sales":464.84},{"period":"2026-07-19","sessions":56,"units":18,"sales":467.46},{"period":"2026-07-26","sessions":45,"units":14,"sales":363.58},{"period":"2026-08-02","sessions":33,"units":16,"sales":415.52},{"period":"2026-08-09","sessions":5,"units":1,"sales":25.97}],"campaigns":[{"campaignName":"DB- Vit_C \"SPAQL\" GT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":354,"clicks":60,"spend":123.3,"sales":206.76,"units":8,"orders":7,"ctr":0.1695,"cvr":0.1167,"acos":0.5963,"roas":1.68},{"campaignName":"DB- Vit_C \"SPAAS\" GT SPA","theme":"SPAAS","matchType":"SPA","impressions":196,"clicks":30,"spend":61.2,"sales":73.91,"units":3,"orders":3,"ctr":0.1531,"cvr":0.1,"acos":0.828,"roas":1.21},{"campaignName":"Vit_C |DB asin-other","theme":null,"matchType":null,"impressions":150,"clicks":5,"spend":11.5,"sales":0,"units":0,"orders":0,"ctr":0.0333,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Vit_C \"SPAQC\" GT SPA","theme":"SPAQC","matchType":"SPA","impressions":22,"clicks":6,"spend":11.04,"sales":25.97,"units":1,"orders":1,"ctr":0.2727,"cvr":0.1667,"acos":0.4251,"roas":2.35},{"campaignName":"DB- Vit_C _ _ SDPT:asin:self","theme":null,"matchType":null,"impressions":21,"clicks":4,"spend":10.02,"sales":24.97,"units":1,"orders":1,"ctr":0.1905,"cvr":0.25,"acos":0.4013,"roas":2.49},{"campaignName":"Vit_C |DB standard/T","theme":null,"matchType":null,"impressions":37,"clicks":5,"spend":9.06,"sales":50.94,"units":2,"orders":2,"ctr":0.1351,"cvr":0.4,"acos":0.1779,"roas":5.62}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":760,"clicks":107,"spend":217.51,"sales":383.55,"units":15,"orders":14,"ctr":0.1408,"cvr":0.1308,"acos":0.5671,"roas":1.76},{"adType":"SD","label":"Sponsored Display","impressions":21,"clicks":4,"spend":10.02,"sales":24.97,"units":1,"orders":1,"ctr":0.1905,"cvr":0.25,"acos":0.4013,"roas":2.49}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":572,"clicks":96,"spend":195.54,"sales":306.64,"ctr":0.1678,"cvr":0.1146,"acos":0.6377,"roas":1.57},{"key":"unclassified","label":"Other / unclassified","impressions":188,"clicks":11,"spend":21.97,"sales":76.91,"ctr":0.0585,"cvr":0.2727,"acos":0.2857,"roas":3.5},{"key":"display_targeting","label":"Display targeting","impressions":21,"clicks":4,"spend":10.02,"sales":24.97,"ctr":0.1905,"cvr":0.25,"acos":0.4013,"roas":2.49}],"bsrTrend":[{"period":"2026-06-14","rank":775},{"period":"2026-06-21","rank":764},{"period":"2026-06-28","rank":662},{"period":"2026-07-05","rank":799},{"period":"2026-07-12","rank":693},{"period":"2026-07-19","rank":673},{"period":"2026-07-26","rank":776},{"period":"2026-08-02","rank":765},{"period":"2026-08-09","rank":843}],"bsrSummary":{"category":"Vitamin C","current":843,"currentDate":"2026-08-09","rank30dAgo":646,"date30dAgo":"2026-07-10","rankEarliest":897,"dateEarliest":"2026-06-16","pctChange30d":-30.5,"pctChangeFull":6.0,"trend":"up"},"metrics7d":{"sessions":34,"totalUnits":16,"totalSales":415.52,"impressions":141,"clicks":6,"adSpend":12.72,"adSales":0,"adUnits":0,"adOrders":0,"ctr":0.0426,"cvr":0.0,"acos":999,"tacos":3.06,"roas":0.0},"cogsPerUnit":5.03,"cogsAsOf":"16/05/2025"},{"asin":"B0CNJ6GBH3","sku":"I2-8KDH-PURRES","category":"Resveratrol","bsr":433,"sessions":84,"totalUnits":50,"totalSales":1498.5,"impressions":16,"clicks":9,"adSpend":4.08,"adSales":94.91,"adUnits":3,"adOrders":2,"ctr":0.5625,"cvr":0.2222,"acos":0.043,"roas":23.26,"tacos":0.27,"weekly":[{"period":"2026-07-12","sessions":31,"units":10,"sales":299.7},{"period":"2026-07-19","sessions":13,"units":9,"sales":269.73},{"period":"2026-07-26","sessions":24,"units":13,"sales":389.61},{"period":"2026-08-02","sessions":14,"units":17,"sales":509.49},{"period":"2026-08-09","sessions":2,"units":1,"sales":29.97}],"campaigns":[{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":16,"clicks":9,"spend":4.08,"sales":94.91,"units":3,"orders":2,"ctr":0.5625,"cvr":0.2222,"acos":0.043,"roas":23.26},{"campaignName":"DB- Resveratrol G SPKE","theme":null,"matchType":"SPKE","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null},{"campaignName":"DB- Magnesium \"B07P5K7DQP\" GT SPTA; mn=15","theme":"B07P5K7DQP","matchType":"SPTA","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":16,"clicks":9,"spend":4.08,"sales":94.91,"units":3,"orders":2,"ctr":0.5625,"cvr":0.2222,"acos":0.043,"roas":23.26}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":16,"clicks":9,"spend":4.08,"sales":94.91,"ctr":0.5625,"cvr":0.2222,"acos":0.043,"roas":23.26}],"bsrTrend":[{"period":"2026-06-14","rank":424},{"period":"2026-06-21","rank":394},{"period":"2026-06-28","rank":399},{"period":"2026-07-05","rank":439},{"period":"2026-07-12","rank":435},{"period":"2026-07-19","rank":396},{"period":"2026-07-26","rank":405},{"period":"2026-08-02","rank":441},{"period":"2026-08-09","rank":433}],"bsrSummary":{"category":"Resveratrol","current":433,"currentDate":"2026-08-09","rank30dAgo":468,"date30dAgo":"2026-07-10","rankEarliest":395,"dateEarliest":"2026-06-16","pctChange30d":7.5,"pctChangeFull":-9.6,"trend":"down"},"metrics7d":{"sessions":10,"totalUnits":11,"totalSales":329.67,"impressions":0,"clicks":0,"adSpend":0,"adSales":0,"adUnits":0,"adOrders":0,"ctr":null,"cvr":null,"acos":null,"tacos":0.0,"roas":null},"cogsPerUnit":5.52,"cogsAsOf":"27/06/2026"},{"asin":"B075V792JV","sku":"FISH-OIL-FBA90","category":"Fish Oil","bsr":460,"sessions":85,"totalUnits":37,"totalSales":1310.6,"impressions":1207,"clicks":32,"adSpend":143.24,"adSales":0,"adUnits":0,"adOrders":0,"ctr":0.0265,"cvr":0,"acos":null,"roas":0,"tacos":10.93,"weekly":[{"period":"2026-07-12","sessions":23,"units":8,"sales":283.96},{"period":"2026-07-19","sessions":22,"units":8,"sales":285.36},{"period":"2026-07-26","sessions":18,"units":8,"sales":279.57},{"period":"2026-08-02","sessions":22,"units":13,"sales":461.71}],"campaigns":[{"campaignName":"B075V792JV \"pure fish oil\" |DB keyphrase","theme":"pure fish oil","matchType":null,"impressions":199,"clicks":12,"spend":87.44,"sales":0,"units":0,"orders":0,"ctr":0.0603,"cvr":0,"acos":null,"roas":0},{"campaignName":"Omega3 |DB standard","theme":null,"matchType":null,"impressions":972,"clicks":13,"spend":35.56,"sales":0,"units":0,"orders":0,"ctr":0.0134,"cvr":0,"acos":null,"roas":0},{"campaignName":"Omega3 |DB standard/T","theme":null,"matchType":null,"impressions":34,"clicks":6,"spend":19.78,"sales":0,"units":0,"orders":0,"ctr":0.1765,"cvr":0,"acos":null,"roas":0},{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":2,"clicks":1,"spend":0.46,"sales":0,"units":0,"orders":0,"ctr":0.5,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Vit_D3_K2 \"SPAQC\" GT SPA","theme":"SPAQC","matchType":"SPA","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null},{"campaignName":"DB- Saffron \"B09DTN7P4W\" GT SPTA; mn=550 mx=800","theme":"B09DTN7P4W","matchType":"SPTA","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":1207,"clicks":32,"spend":143.24,"sales":0,"units":0,"orders":0,"ctr":0.0265,"cvr":0,"acos":null,"roas":0}],"matchTypes":[{"key":"phrase","label":"Phrase match","impressions":199,"clicks":12,"spend":87.44,"sales":0,"ctr":0.0603,"cvr":0.0,"acos":999,"roas":0.0},{"key":"unclassified","label":"Other / unclassified","impressions":1006,"clicks":19,"spend":55.34,"sales":0,"ctr":0.0189,"cvr":0.0,"acos":999,"roas":0.0},{"key":"auto","label":"Auto targeting","impressions":2,"clicks":1,"spend":0.46,"sales":0,"ctr":0.5,"cvr":0.0,"acos":999,"roas":0.0}],"bsrTrend":[{"period":"2026-06-14","rank":372},{"period":"2026-06-21","rank":364},{"period":"2026-06-28","rank":377},{"period":"2026-07-05","rank":431},{"period":"2026-07-12","rank":433},{"period":"2026-07-19","rank":434},{"period":"2026-07-26","rank":407},{"period":"2026-08-02","rank":433},{"period":"2026-08-09","rank":460}],"bsrSummary":{"category":"Fish Oil","current":460,"currentDate":"2026-08-09","rank30dAgo":403,"date30dAgo":"2026-07-10","rankEarliest":311,"dateEarliest":"2026-06-16","pctChange30d":-14.1,"pctChangeFull":-47.9,"trend":"down"},"metrics7d":{"sessions":17,"totalUnits":11,"totalSales":389.97,"impressions":33,"clicks":6,"adSpend":22.05,"adSales":0,"adUnits":0,"adOrders":0,"ctr":0.1818,"cvr":0.0,"acos":999,"tacos":5.65,"roas":0.0},"cogsPerUnit":7.46,"cogsAsOf":"01/01/1970"},{"asin":"B012QAK056","sku":"D3-5000-FBA1","category":"Vitamin D","bsr":872,"sessions":127,"totalUnits":53,"totalSales":1137.91,"impressions":844,"clicks":69,"adSpend":130.21,"adSales":323.58,"adUnits":14,"adOrders":14,"ctr":0.0818,"cvr":0.2029,"acos":0.4024,"roas":2.49,"tacos":11.44,"weekly":[{"period":"2026-07-12","sessions":28,"units":13,"sales":279.11},{"period":"2026-07-19","sessions":39,"units":13,"sales":279.11},{"period":"2026-07-26","sessions":23,"units":6,"sales":128.82},{"period":"2026-08-02","sessions":34,"units":18,"sales":386.46},{"period":"2026-08-09","sessions":3,"units":3,"sales":64.41}],"campaigns":[{"campaignName":"DB- Vit_D3 B012QAK056 \"SPAQL\" AT SPA","theme":"SPAQL","matchType":"SPAQL","impressions":383,"clicks":62,"spend":125.21,"sales":323.58,"units":14,"orders":14,"ctr":0.1619,"cvr":0.2258,"acos":0.387,"roas":2.58},{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":459,"clicks":6,"spend":2.92,"sales":0,"units":0,"orders":0,"ctr":0.0131,"cvr":0,"acos":null,"roas":0},{"campaignName":"B012QAK056 \"pure d3\" |DB keyphrase","theme":"pure d3","matchType":null,"impressions":2,"clicks":1,"spend":2.08,"sales":0,"units":0,"orders":0,"ctr":0.5,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Mushroom _ _ SDPT:asin:self","theme":null,"matchType":null,"impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null},{"campaignName":"Iron |DB standard","theme":null,"matchType":null,"impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":787,"clicks":69,"spend":130.21,"sales":323.58,"units":14,"orders":14,"ctr":0.0877,"cvr":0.2029,"acos":0.4024,"roas":2.49}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":785,"clicks":68,"spend":128.13,"sales":323.58,"ctr":0.0866,"cvr":0.2059,"acos":0.396,"roas":2.53},{"key":"phrase","label":"Phrase match","impressions":2,"clicks":1,"spend":2.08,"sales":0,"ctr":0.5,"cvr":0.0,"acos":999,"roas":0.0}],"bsrTrend":[{"period":"2026-06-14","rank":762},{"period":"2026-06-21","rank":904},{"period":"2026-06-28","rank":756},{"period":"2026-07-05","rank":646},{"period":"2026-07-12","rank":756},{"period":"2026-07-19","rank":728},{"period":"2026-07-26","rank":836},{"period":"2026-08-02","rank":689},{"period":"2026-08-09","rank":872}],"bsrSummary":{"category":"Vitamin D","current":872,"currentDate":"2026-08-09","rank30dAgo":609,"date30dAgo":"2026-07-10","rankEarliest":714,"dateEarliest":"2026-06-16","pctChange30d":-43.2,"pctChangeFull":-22.1,"trend":"down"},"metrics7d":{"sessions":40,"totalUnits":17,"totalSales":364.99,"impressions":382,"clicks":9,"adSpend":11.26,"adSales":21.47,"adUnits":1,"adOrders":1,"ctr":0.0236,"cvr":0.1111,"acos":0.5245,"tacos":3.09,"roas":1.91},"cogsPerUnit":3.43,"cogsAsOf":"04/03/2025"},{"asin":"B0BKRQF6YF","sku":"PDC-CALM-CHW90","category":"Relaxants","bsr":411,"sessions":56,"totalUnits":33,"totalSales":1088.01,"impressions":76,"clicks":3,"adSpend":1.3,"adSales":0,"adUnits":0,"adOrders":0,"ctr":0.0395,"cvr":0,"acos":null,"roas":0,"tacos":0.12,"weekly":[{"period":"2026-07-12","sessions":13,"units":6,"sales":197.82},{"period":"2026-07-19","sessions":14,"units":6,"sales":197.82},{"period":"2026-07-26","sessions":7,"units":9,"sales":296.73},{"period":"2026-08-02","sessions":20,"units":10,"sales":329.7},{"period":"2026-08-09","sessions":2,"units":2,"sales":65.94}],"campaigns":[{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":76,"clicks":3,"spend":1.3,"sales":0,"units":0,"orders":0,"ctr":0.0395,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- PD:Hip_Joint \"SPAQC\" GT SPA","theme":"SPAQC","matchType":"SPA","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":76,"clicks":3,"spend":1.3,"sales":0,"units":0,"orders":0,"ctr":0.0395,"cvr":0,"acos":null,"roas":0}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":76,"clicks":3,"spend":1.3,"sales":0,"ctr":0.0395,"cvr":0.0,"acos":999,"roas":0.0}],"bsrTrend":[{"period":"2026-06-14","rank":431},{"period":"2026-06-21","rank":489},{"period":"2026-06-28","rank":504},{"period":"2026-07-05","rank":468},{"period":"2026-07-12","rank":540},{"period":"2026-07-19","rank":406},{"period":"2026-07-26","rank":476},{"period":"2026-08-02","rank":457},{"period":"2026-08-09","rank":411}],"bsrSummary":{"category":"Relaxants","current":411,"currentDate":"2026-08-09","rank30dAgo":419,"date30dAgo":"2026-07-09","rankEarliest":464,"dateEarliest":"2026-06-16","pctChange30d":1.9,"pctChangeFull":11.4,"trend":"up"},"metrics7d":{"sessions":10,"totalUnits":10,"totalSales":329.7,"impressions":0,"clicks":0,"adSpend":0,"adSales":0,"adUnits":0,"adOrders":0,"ctr":null,"cvr":null,"acos":null,"tacos":0.0,"roas":null},"cogsPerUnit":8.13,"cogsAsOf":"05/06/2026"},{"asin":"B09T2PRVSR","sku":"BLYS-SAFFRON-60","category":"Blended Vitamin & Mineral Supplements","bsr":13099,"sessions":133,"totalUnits":23,"totalSales":573.85,"impressions":7753,"clicks":134,"adSpend":232.38,"adSales":170.76,"adUnits":7,"adOrders":7,"ctr":0.0173,"cvr":0.0522,"acos":1.3609,"roas":0.73,"tacos":40.49,"weekly":[{"period":"2026-07-12","sessions":31,"units":4,"sales":99.8},{"period":"2026-07-19","sessions":37,"units":5,"sales":124.75},{"period":"2026-07-26","sessions":33,"units":9,"sales":224.55},{"period":"2026-08-02","sessions":23,"units":4,"sales":99.8},{"period":"2026-08-09","sessions":9,"units":1,"sales":24.95}],"campaigns":[{"campaignName":"DB- GoodVibes G SPKE","theme":null,"matchType":"SPKE","impressions":5610,"clicks":55,"spend":105.88,"sales":49.9,"units":2,"orders":2,"ctr":0.0098,"cvr":0.0364,"acos":2.1218,"roas":0.47},{"campaignName":"DB- GoodVibes \"SPAAS\" GT SPA","theme":"SPAAS","matchType":"SPA","impressions":333,"clicks":49,"spend":75.24,"sales":45.97,"units":2,"orders":2,"ctr":0.1471,"cvr":0.0408,"acos":1.6367,"roas":0.61},{"campaignName":"DB- GoodVibes \"SPAQC\" GT SPA","theme":"SPAQC","matchType":"SPA","impressions":1772,"clicks":18,"spend":33.26,"sales":74.89,"units":3,"orders":3,"ctr":0.0102,"cvr":0.1667,"acos":0.4441,"roas":2.25},{"campaignName":"DB- GoodVibes \"SPAAC\" GT SPA","theme":"SPAAC","matchType":"SPA","impressions":38,"clicks":12,"spend":18,"sales":0,"units":0,"orders":0,"ctr":0.3158,"cvr":0,"acos":null,"roas":0},{"campaignName":"DB- Saffron G SPKE; mn=70","theme":null,"matchType":"SPKE","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":7739,"clicks":134,"spend":232.38,"sales":170.76,"units":7,"orders":7,"ctr":0.0173,"cvr":0.0522,"acos":1.3609,"roas":0.73}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":2138,"clicks":79,"spend":126.5,"sales":120.86,"ctr":0.037,"cvr":0.0633,"acos":1.0467,"roas":0.96},{"key":"exact","label":"Exact match","impressions":5601,"clicks":55,"spend":105.88,"sales":49.9,"ctr":0.0098,"cvr":0.0364,"acos":2.1218,"roas":0.47}],"bsrTrend":[{"period":"2026-06-14","rank":9406},{"period":"2026-06-21","rank":12304},{"period":"2026-06-28","rank":12041},{"period":"2026-07-05","rank":10386},{"period":"2026-07-12","rank":11693},{"period":"2026-07-19","rank":9546},{"period":"2026-07-26","rank":11205},{"period":"2026-08-02","rank":10949},{"period":"2026-08-09","rank":13099}],"bsrSummary":{"category":"Blended Vitamin & Mineral Supplements","current":13099,"currentDate":"2026-08-09","rank30dAgo":9928,"date30dAgo":"2026-07-09","rankEarliest":7504,"dateEarliest":"2026-06-16","pctChange30d":-31.9,"pctChangeFull":-74.6,"trend":"down"},"metrics7d":{"sessions":24,"totalUnits":4,"totalSales":99.8,"impressions":2896,"clicks":35,"adSpend":61.31,"adSales":24.97,"adUnits":1,"adOrders":1,"ctr":0.0121,"cvr":0.0286,"acos":2.4553,"tacos":61.43,"roas":0.41},"cogsPerUnit":2.61,"cogsAsOf":"24/01/2026"},{"asin":"B07L31X7XJ","sku":"MG-H6GM-QVRO","category":"Mushrooms","bsr":1982,"sessions":28,"totalUnits":11,"totalSales":307.67,"impressions":33324,"clicks":77,"adSpend":337.53,"adSales":622.22,"adUnits":26,"adOrders":26,"ctr":0.0023,"cvr":0.3377,"acos":0.5425,"roas":1.84,"tacos":109.71,"weekly":[{"period":"2026-07-19","sessions":2,"units":3,"sales":83.91},{"period":"2026-07-26","sessions":16,"units":6,"sales":167.82},{"period":"2026-08-02","sessions":10,"units":2,"sales":55.94}],"campaigns":[{"campaignName":"DB- Mushroom _ _ SDPT:asin:self","theme":null,"matchType":null,"impressions":33319,"clicks":75,"spend":336.99,"sales":598.25,"units":25,"orders":25,"ctr":0.0023,"cvr":0.3333,"acos":0.5633,"roas":1.78},{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":5,"clicks":2,"spend":0.54,"sales":23.97,"units":1,"orders":1,"ctr":0.4,"cvr":0.5,"acos":0.0225,"roas":44.39}],"adTypes":[{"adType":"SD","label":"Sponsored Display","impressions":33317,"clicks":75,"spend":336.99,"sales":598.25,"units":25,"orders":25,"ctr":0.0023,"cvr":0.3333,"acos":0.5633,"roas":1.78},{"adType":"SP","label":"Sponsored Products","impressions":5,"clicks":2,"spend":0.54,"sales":23.97,"units":1,"orders":1,"ctr":0.4,"cvr":0.5,"acos":0.0225,"roas":44.39}],"matchTypes":[{"key":"display_targeting","label":"Display targeting","impressions":33317,"clicks":75,"spend":336.99,"sales":598.25,"ctr":0.0023,"cvr":0.3333,"acos":0.5633,"roas":1.78},{"key":"auto","label":"Auto targeting","impressions":5,"clicks":2,"spend":0.54,"sales":23.97,"ctr":0.4,"cvr":0.5,"acos":0.0225,"roas":44.39}],"bsrTrend":[{"period":"2026-06-14","rank":1349},{"period":"2026-06-21","rank":1685},{"period":"2026-06-28","rank":1495},{"period":"2026-07-05","rank":1415},{"period":"2026-07-12","rank":1813},{"period":"2026-07-19","rank":1165},{"period":"2026-07-26","rank":1410},{"period":"2026-08-02","rank":1621}],"bsrSummary":{"category":"Mushrooms","current":1982,"currentDate":"2026-08-08","rank30dAgo":1659,"date30dAgo":"2026-07-09","rankEarliest":1453,"dateEarliest":"2026-06-16","pctChange30d":-19.5,"pctChangeFull":-36.4,"trend":"down"},"metrics7d":{"sessions":10,"totalUnits":2,"totalSales":55.94,"impressions":5385,"clicks":12,"adSpend":51.17,"adSales":46.44,"adUnits":2,"adOrders":2,"ctr":0.0022,"cvr":0.1667,"acos":1.1019,"tacos":91.47,"roas":0.91},"cogsPerUnit":5.99,"cogsAsOf":"01/01/1970"},{"asin":"B09N9DMDS4","sku":"BLYS-5HTP-60","category":"5-HTP","bsr":211,"sessions":20,"totalUnits":11,"totalSales":297.0,"impressions":1210,"clicks":17,"adSpend":29.23,"adSales":76.97,"adUnits":3,"adOrders":3,"ctr":0.014,"cvr":0.1765,"acos":0.3798,"roas":2.63,"tacos":9.84,"weekly":[{"period":"2026-07-12","sessions":0,"units":1,"sales":27},{"period":"2026-07-19","sessions":1,"units":1,"sales":27},{"period":"2026-07-26","sessions":8,"units":6,"sales":162},{"period":"2026-08-02","sessions":11,"units":3,"sales":81}],"campaigns":[{"campaignName":"DB- SweetDreams Gt SPA","theme":null,"matchType":"SPA","impressions":1205,"clicks":12,"spend":23.04,"sales":76.97,"units":3,"orders":3,"ctr":0.01,"cvr":0.25,"acos":0.2993,"roas":3.34},{"campaignName":"SweetDreams |DB autos80","theme":null,"matchType":null,"impressions":5,"clicks":5,"spend":6.19,"sales":0,"units":0,"orders":0,"ctr":1,"cvr":0,"acos":null,"roas":0}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":1210,"clicks":17,"spend":29.23,"sales":76.97,"units":3,"orders":3,"ctr":0.014,"cvr":0.1765,"acos":0.3798,"roas":2.63}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":1210,"clicks":17,"spend":29.23,"sales":76.97,"ctr":0.014,"cvr":0.1765,"acos":0.3798,"roas":2.63}],"bsrTrend":[{"period":"2026-06-14","rank":230},{"period":"2026-06-21","rank":248},{"period":"2026-06-28","rank":340},{"period":"2026-07-12","rank":306},{"period":"2026-07-19","rank":240},{"period":"2026-07-26","rank":239},{"period":"2026-08-02","rank":241}],"bsrSummary":{"category":"5-HTP","current":211,"currentDate":"2026-08-08","rank30dAgo":331,"date30dAgo":"2026-07-12","rankEarliest":230,"dateEarliest":"2026-06-16","pctChange30d":36.3,"pctChangeFull":8.3,"trend":"up"},"metrics7d":{"sessions":7,"totalUnits":3,"totalSales":81.0,"impressions":1107,"clicks":4,"adSpend":5.83,"adSales":49.97,"adUnits":2,"adOrders":2,"ctr":0.0036,"cvr":0.5,"acos":0.1167,"tacos":7.2,"roas":8.57},"cogsPerUnit":5.64,"cogsAsOf":"13/05/2025"},{"asin":"B09T2ZTRKB","sku":"BLYS-SEAMOSS-VI90","category":"Blended Vitamin & Mineral Supplements","bsr":18759,"sessions":15,"totalUnits":8,"totalSales":184.0,"impressions":95,"clicks":4,"adSpend":1.45,"adSales":45.97,"adUnits":2,"adOrders":2,"ctr":0.0421,"cvr":0.5,"acos":0.0315,"roas":31.7,"tacos":0.79,"weekly":[{"period":"2026-07-12","sessions":8,"units":2,"sales":46},{"period":"2026-07-19","sessions":2,"units":2,"sales":46},{"period":"2026-07-26","sessions":3,"units":2,"sales":46},{"period":"2026-08-02","sessions":2,"units":2,"sales":46}],"campaigns":[{"campaignName":"Catch All - Auto","theme":null,"matchType":null,"impressions":95,"clicks":4,"spend":1.45,"sales":45.97,"units":2,"orders":2,"ctr":0.0421,"cvr":0.5,"acos":0.0315,"roas":31.7},{"campaignName":"DB- GoodVibes \"SPAAS\" GT SPA","theme":"SPAAS","matchType":"SPA","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null},{"campaignName":"DB- Unwind \"B09QZGV5YZ\" GT SPTA:defensive","theme":"B09QZGV5YZ","matchType":"SPTA","impressions":0,"clicks":0,"spend":0,"sales":0,"units":0,"orders":0,"ctr":null,"cvr":null,"acos":null,"roas":null}],"adTypes":[{"adType":"SP","label":"Sponsored Products","impressions":95,"clicks":4,"spend":1.45,"sales":45.97,"units":2,"orders":2,"ctr":0.0421,"cvr":0.5,"acos":0.0315,"roas":31.7}],"matchTypes":[{"key":"auto","label":"Auto targeting","impressions":95,"clicks":4,"spend":1.45,"sales":45.97,"ctr":0.0421,"cvr":0.5,"acos":0.0315,"roas":31.7}],"bsrTrend":[{"period":"2026-06-14","rank":19050},{"period":"2026-06-21","rank":18618},{"period":"2026-06-28","rank":17175},{"period":"2026-07-05","rank":16489},{"period":"2026-07-12","rank":17588},{"period":"2026-07-19","rank":13072},{"period":"2026-07-26","rank":19074},{"period":"2026-08-02","rank":14893},{"period":"2026-08-09","rank":18759}],"bsrSummary":{"category":"Blended Vitamin & Mineral Supplements","current":18759,"currentDate":"2026-08-09","rank30dAgo":13183,"date30dAgo":"2026-07-10","rankEarliest":20622,"dateEarliest":"2026-06-16","pctChange30d":-42.3,"pctChangeFull":9.0,"trend":"up"},"metrics7d":{"sessions":2,"totalUnits":2,"totalSales":46.0,"impressions":93,"clicks":2,"adSpend":0.91,"adSales":0,"adUnits":0,"adOrders":0,"ctr":0.0215,"cvr":0.0,"acos":999,"tacos":1.98,"roas":0.0},"cogsPerUnit":4.58,"cogsAsOf":"07/05/2025"}],"weekly":[{"period":"2026-07-12","sales":204986.6,"units":8140,"sessions":31307},{"period":"2026-07-19","sales":192524.27,"units":7638,"sessions":29358},{"period":"2026-07-26","sales":187820.78,"units":7383,"sessions":28607},{"period":"2026-08-02","sales":203646.19,"units":8155,"sessions":30937},{"period":"2026-08-09","sales":31436.17,"units":1260,"sessions":4341}],"inventory":{"source":"The Fulfillment Lab (3PL reserve warehouse, Tampa)","asOf":"2026-08-06","leadTimeDays":60,"targetDays":90,"reorderPointDays":150,"overstockDays":270,"bySku":[{"asin":"B097TKQSQD","sku":"SA-FFRON-FBA","category":"Herbal Supplements","velocityPerDay":618.67,"totalSales":462979.88,"matched":true,"available":1467,"reserveCoverDays":2.4,"status":"critical","expiry":"2028-05-28","expiryRisk":false,"note":"Pure Saffron"},{"asin":"B00NRQ06VM","sku":"MAG-CAPS-FBA180","category":"Magnesium","velocityPerDay":164.0,"totalSales":124288.67,"matched":true,"available":5049,"reserveCoverDays":30.8,"status":"critical","expiry":"2029-03-28","expiryRisk":false,"note":"Pure Magnesium - Amber"},{"asin":"B00NQTP53Y","sku":"IRON-PLUS-FBA1","category":"Iron","velocityPerDay":110.17,"totalSales":80075.87,"matched":true,"available":11411,"reserveCoverDays":103.6,"status":"low","expiry":"2029-01-28","expiryRisk":false,"note":"Iron Plus"},{"asin":"B017L2H4EY","sku":"TJ-MTZ6-FBA1","category":"Zinc","velocityPerDay":63.13,"totalSales":42410.59,"matched":true,"available":1611,"reserveCoverDays":25.5,"status":"critical","expiry":"2029-01-28","expiryRisk":false,"note":"Pure Zinc"},{"asin":"B0731BD7DR","sku":"ORG-CURC-FBA60","category":"Turmeric","velocityPerDay":25.63,"totalSales":20739.93,"matched":true,"available":658,"reserveCoverDays":25.7,"status":"critical","expiry":"2029-05-28","expiryRisk":false,"note":"Organic Curcumin"},{"asin":"B09QZGV5YZ","sku":"BLYS-MAG-UW120","category":"Magnesium","velocityPerDay":21.47,"totalSales":14792.68,"matched":false,"available":null,"reserveCoverDays":null,"status":"no_data","expiry":null,"note":null},{"asin":"B086VWFTQ7","sku":"ORG-RES-FBA90","category":"Resveratrol","velocityPerDay":12.87,"totalSales":13498.42,"matched":true,"available":595,"reserveCoverDays":46.2,"status":"critical","expiry":"2028-08-28","expiryRisk":false,"note":"Organic Resveratrol - Amber"},{"asin":"B0DKH9L35B","sku":"VAG-PRO-FBA60","category":"Probiotics","velocityPerDay":12.1,"totalSales":10864.11,"matched":true,"available":291,"reserveCoverDays":24.0,"status":"critical","expiry":"2028-07-28","expiryRisk":false,"note":"Women's Probiotics"},{"asin":"B0G4D42W67","sku":"MENO-SUP-FBA60","category":"Menopause","velocityPerDay":11.77,"totalSales":10010.55,"matched":true,"available":2767,"reserveCoverDays":235.1,"status":"healthy","expiry":null,"expiryRisk":false,"note":"Menopause Support"},{"asin":"B00NRQDT70","sku":"BONE-S-FBA1","category":"Calcium","velocityPerDay":5.73,"totalSales":7388.34,"matched":true,"available":357,"reserveCoverDays":62.3,"status":"low","expiry":"2028-12-28","expiryRisk":false,"note":"Bone Support (2 lots)"},{"asin":"B07N1MPVKT","sku":"5HTP-FBA60","category":"5-HTP","velocityPerDay":9.57,"totalSales":7166.39,"matched":true,"available":1887,"reserveCoverDays":197.2,"status":"healthy","expiry":"2027-05-28","expiryRisk":false,"note":"Pure 5HTP + Amber (2 lots)"},{"asin":"B0BX35TNYD","sku":"PDS-HIPJOINT-CHW90","category":"Hip & Joint Care","velocityPerDay":4.93,"totalSales":5621.56,"matched":true,"available":509,"reserveCoverDays":103.2,"status":"low","expiry":"2028-05-28","expiryRisk":false,"note":"Hip & Joint (new batch + old lot)"},{"asin":"B0D4PBTSPX","sku":"MAG-POWDER-FBA","category":"Magnesium","velocityPerDay":3.27,"totalSales":2937.06,"matched":true,"available":2320,"reserveCoverDays":709.5,"status":"overstock","expiry":"2028-10-28","expiryRisk":false,"note":"Pure Magnesium Powder - HG"},{"asin":"B086WYQQ8V","sku":"MEGA-ZINC-FBA100","category":"Zinc","velocityPerDay":4.4,"totalSales":2891.61,"matched":true,"available":-1,"reserveCoverDays":0.0,"status":"critical","expiry":null,"expiryRisk":false,"note":"Mega Zinc \u2014 OVERSOLD/depleted"},{"asin":"B09B9Y3QSC","sku":"UT-SUPPORT-FBA","category":"Cranberry","velocityPerDay":3.37,"totalSales":2521.97,"matched":true,"available":1466,"reserveCoverDays":435.0,"status":"overstock","expiry":"2028-01-28","expiryRisk":false,"note":"UT Support - Amber"},{"asin":"B0CQJTNQYM","sku":"D35-VK2-FBA1","category":null,"velocityPerDay":3.07,"totalSales":2205.24,"matched":true,"available":515,"reserveCoverDays":167.8,"status":"healthy","expiry":"2029-02-28","expiryRisk":false,"note":"D3 + K2 Complex - Amber"},{"asin":"B07WHN6WCQ","sku":"PROSTATE-FBA60","category":"Saw Palmetto","velocityPerDay":1.97,"totalSales":1886.23,"matched":true,"available":1644,"reserveCoverDays":834.5,"status":"overstock","expiry":"2028-11-28","expiryRisk":false,"note":"Prostate Support"},{"asin":"B086WKKYQL","sku":"GC-L52G-XEJ6","category":"Vitamin C","velocityPerDay":2.23,"totalSales":1737.37,"matched":true,"available":84,"reserveCoverDays":37.7,"status":"critical","expiry":"2028-04-28","expiryRisk":false,"note":"Pure Vitamin C"},{"asin":"B0CNJ6GBH3","sku":"I2-8KDH-PURRES","category":"Resveratrol","velocityPerDay":1.67,"totalSales":1498.5,"matched":true,"available":735,"reserveCoverDays":440.1,"status":"overstock","expiry":"2027-10-28","expiryRisk":false,"note":"Pure Resveratrol + Amber (2 lots)"},{"asin":"B075V792JV","sku":"FISH-OIL-FBA90","category":"Fish Oil","velocityPerDay":1.23,"totalSales":1310.6,"matched":true,"available":525,"reserveCoverDays":426.8,"status":"overstock","expiry":"2028-06-28","expiryRisk":false,"note":"Pure Fish Oil 90C"},{"asin":"B012QAK056","sku":"D3-5000-FBA1","category":"Vitamin D","velocityPerDay":1.77,"totalSales":1137.91,"matched":true,"available":255,"reserveCoverDays":144.1,"status":"low","expiry":"2027-07-28","expiryRisk":false,"note":"Pure D3 5000 IU 90C"},{"asin":"B0BKRQF6YF","sku":"PDC-CALM-CHW90","category":"Relaxants","velocityPerDay":1.1,"totalSales":1088.01,"matched":true,"available":1204,"reserveCoverDays":1094.5,"status":"overstock","expiry":"2028-05-28","expiryRisk":true,"note":"Calming - new batch"},{"asin":"B09T2PRVSR","sku":"BLYS-SAFFRON-60","category":"Blended Vitamin & Mineral Supplements","velocityPerDay":0.77,"totalSales":573.85,"matched":true,"available":534,"reserveCoverDays":693.5,"status":"overstock","expiry":"2028-10-28","expiryRisk":false,"note":"Blyss Saffron (Good Vibes)"},{"asin":"B07L31X7XJ","sku":"MG-H6GM-QVRO","category":"Mushrooms","velocityPerDay":0.37,"totalSales":307.67,"matched":true,"available":1101,"reserveCoverDays":2975.7,"status":"overstock","expiry":"2027-05-28","expiryRisk":true,"note":"Organic Mushrooms"},{"asin":"B09N9DMDS4","sku":"BLYS-5HTP-60","category":"5-HTP","velocityPerDay":0.37,"totalSales":297.0,"matched":false,"available":null,"reserveCoverDays":null,"status":"no_data","expiry":null,"note":null},{"asin":"B09T2ZTRKB","sku":"BLYS-SEAMOSS-VI90","category":"Blended Vitamin & Mineral Supplements","velocityPerDay":0.27,"totalSales":184.0,"matched":true,"available":320,"reserveCoverDays":1185.2,"status":"overstock","expiry":"2029-03-28","expiryRisk":true,"note":"Irish Sea Moss (2 lots)"}]},"sqp":{"periods":[{"period":"2026-07-05","imprShare":0.339,"clickShare":0.567,"purchShare":0.501},{"period":"2026-07-12","imprShare":0.356,"clickShare":0.48,"purchShare":0.42},{"period":"2026-07-19","imprShare":0.317,"clickShare":0.402,"purchShare":0.349}]},"meta":{"dateFirst":"2026-07-06","dateLast":"2026-08-04","generated":"2026-08-06"},"bsrMeta":{"earliestDate":"2026-06-16","latestDate":"2026-08-09"},"acctAdTypes":[{"adType":"SP","label":"Sponsored Products","impressions":2314236,"clicks":44287,"spend":154059.52,"sales":240233.39,"ctr":0.0191,"cvr":0.2108,"acos":0.6413,"roas":1.56},{"adType":"SD","label":"Sponsored Display","impressions":83066,"clicks":167,"spend":749.27,"sales":1173.86,"ctr":0.002,"cvr":0.2874,"acos":0.6383,"roas":1.57},{"adType":"SBV","label":"Sponsored Brands Video","impressions":11366,"clicks":151,"spend":613.13,"sales":714.43,"ctr":0.0133,"cvr":0.1722,"acos":0.8582,"roas":1.17},{"adType":"SB","label":"Sponsored Brands","impressions":3526,"clicks":25,"spend":132.53,"sales":99.88,"ctr":0.0071,"cvr":0.16,"acos":1.3269,"roas":0.75}],"acctMatchTypes":[{"key":"exact","label":"Exact match","impressions":1640408,"clicks":25206,"spend":100688.76,"sales":151775.54,"ctr":0.0154,"cvr":0.2345,"acos":0.6634,"roas":1.51},{"key":"product_targeting","label":"Product targeting (ASIN/category)","impressions":415549,"clicks":11575,"spend":35956.64,"sales":63543.44,"ctr":0.0279,"cvr":0.2131,"acos":0.5659,"roas":1.77},{"key":"auto","label":"Auto targeting","impressions":163499,"clicks":5125,"spend":10775.98,"sales":15952.43,"ctr":0.0313,"cvr":0.1192,"acos":0.6755,"roas":1.48},{"key":"broad","label":"Broad match","impressions":103512,"clicks":2431,"spend":7028.36,"sales":9290.89,"ctr":0.0235,"cvr":0.1477,"acos":0.7565,"roas":1.32},{"key":"display_targeting","label":"Display targeting","impressions":83066,"clicks":167,"spend":749.27,"sales":1173.86,"ctr":0.002,"cvr":0.2874,"acos":0.6383,"roas":1.57},{"key":"unclassified","label":"Other / unclassified","impressions":5896,"clicks":100,"spend":221.8,"sales":322.61,"ctr":0.017,"cvr":0.13,"acos":0.6875,"roas":1.45},{"key":"phrase","label":"Phrase match","impressions":264,"clicks":26,"spend":133.64,"sales":162.79,"ctr":0.0985,"cvr":0.2308,"acos":0.8209,"roas":1.22}],"account7d":{"totalSales":201954.86,"sessions":30367.0,"totalUnits":8113.0,"impressions":659005.0,"clicks":10183.0,"adSpend":35825.62,"adSales":52555.08,"adUnits":2116.0,"adOrders":2059.0,"ctr":0.0155,"cvr":0.2022,"acos":0.6817,"roas":1.47,"tacos":17.74},"meta7d":{"dateFirst":"2026-07-29","dateLast":"2026-08-04"},"pacing":{"available":127612,"inbound":11786,"velocityPerDay":1209.9,"runwayDays":105.5,"runwayWithInboundDays":115.2,"worstAsin":"B0DKH9L35B","worstSku":"VAG-PRO-FBA60","worstAsinRunway":36,"action":"ramp","severity":"medium","rationale":"Runway 105d (\u2265 90d overstock; long-term storage-fee risk) at 1209.9 units/day; ad spend is 0.00/day \u2014 push spend/deals to sell down."},"marginMeta":{"source":"Sellerboard product cost export, uploaded by Tony (2026-08-11)","referralRate":0.15,"referralNote":"Amazon standard referral fee for Health & Household / Personal Care \u2014 assumed flat 15% (not pulled per-SKU from Seller Central)","excludes":"FBA fulfillment (pick-pack) and monthly storage fees \u2014 no per-SKU weight/dimension data connected yet"}}</script>
+
+<script>
+const DATA = JSON.parse(document.getElementById('metrics-data').textContent);
+const NAVY='#513194', GOLD='#C9973E', GREEN='#2EAD6D', SLATE='#5B5568', CRITICAL='#C0392B';
+
+/* ---------------- 7d / 30d window toggle ---------------- */
+let WINDOW_MODE = '30d';
+const METRIC7D_KEYS = ['sessions','totalUnits','totalSales','impressions','clicks','adSpend','adSales','adUnits','adOrders','ctr','cvr','acos','tacos','roas'];
+function getSkuView(row){
+  if(WINDOW_MODE==='7d' && row.metrics7d){
+    return Object.assign({}, row, row.metrics7d);
+  }
+  return row;
+}
+function windowLabel(){ return WINDOW_MODE==='7d' ? '7 days' : '30 days'; }
+
+/* ---------------- Profitability / margin ---------------- */
+const REFERRAL_RATE = (DATA.marginMeta && DATA.marginMeta.referralRate) || 0.15;
+function computeMargin(row){
+  const cogsPerUnit = row.cogsPerUnit;
+  if(cogsPerUnit===null || cogsPerUnit===undefined || !row.totalSales) return null;
+  const units = row.totalUnits||0;
+  const sales = row.totalSales||0;
+  const adSpend = row.adSpend||0;
+  const cogsTotal = cogsPerUnit*units;
+  const referralTotal = sales*REFERRAL_RATE;
+  const grossProfit = sales - cogsTotal - referralTotal - adSpend;
+  const marginPct = sales? (grossProfit/sales*100) : null;
+  const profitPerUnit = units? (grossProfit/units) : null;
+  return {cogsPerUnit, cogsTotal, referralTotal, adSpend, grossProfit, marginPct, profitPerUnit, sales, units};
+}
+function marginStatus(pct){
+  if(pct===null||pct===undefined) return {cls:'status-none', label:'—'};
+  if(pct>=25) return {cls:'status-good', label:pct.toFixed(1)+'%'};
+  if(pct>=0) return {cls:'status-warn', label:pct.toFixed(1)+'%'};
+  return {cls:'status-bad', label:pct.toFixed(1)+'%'};
+}
+function updateSnapshotBadge(){
+  const badge = document.getElementById('snapshotBadge');
+  if(!badge) return;
+  if(WINDOW_MODE==='7d' && DATA.meta7d){
+    const d1 = new Date(DATA.meta7d.dateFirst+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const d2 = new Date(DATA.meta7d.dateLast+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    badge.innerHTML = `● Live snapshot &nbsp;<b>${d1} – ${d2}</b>&nbsp; (trailing 7 days)`;
+  } else if(DATA.meta){
+    const d1 = new Date(DATA.meta.dateFirst+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const d2 = new Date(DATA.meta.dateLast+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    badge.innerHTML = `● Live snapshot &nbsp;<b>${d1} – ${d2}</b>&nbsp; (trailing 30 days)`;
+  }
+}
+
+function fmtMoney(n){
+  if(n===null||n===undefined) return '—';
+  return '$'+Math.round(n).toLocaleString('en-US');
+}
+function fmtMoney2(n){
+  if(n===null||n===undefined) return '—';
+  return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtInt(n){ return (n===null||n===undefined) ? '—' : Math.round(n).toLocaleString('en-US'); }
+function fmtPct(n, digits){
+  if(n===null||n===undefined) return '—';
+  digits = digits===undefined?1:digits;
+  return (n*100).toFixed(digits)+'%';
+}
+function fmtPctRaw(n, digits){ // n already in percent units (0-100)
+  if(n===null||n===undefined) return '—';
+  digits = digits===undefined?1:digits;
+  return n.toFixed(digits)+'%';
+}
+
+const tooltip = document.getElementById('tooltip');
+function showTip(html, evt){
+  tooltip.innerHTML = html;
+  tooltip.style.opacity = 1;
+  tooltip.style.left = (evt.clientX+14)+'px';
+  tooltip.style.top = (evt.clientY+14)+'px';
+}
+function hideTip(){ tooltip.style.opacity = 0; }
+
+/* ---------------- KPI TILES ---------------- */
+function renderAcctKpis(){
+  const a = (WINDOW_MODE==='7d' && DATA.account7d) ? DATA.account7d : DATA.account;
+  const wl = windowLabel();
+  const titleEl = document.getElementById('acctKpisTitle');
+  if(titleEl) titleEl.textContent = 'Account KPIs — last '+wl;
+  const tiles = [
+    {label:'Total sales', value: fmtMoney(a.totalSales), sub:'organic + ads'},
+    {label:'Ad sales', value: fmtMoney(a.adSales), sub: fmtInt(a.adOrders)+' ad orders'},
+    {label:'Ad spend', value: fmtMoney(a.adSpend), sub:'trailing '+wl, accent:true},
+    {label:'ACOS', value: fmtPct(a.acos), sub:'spend ÷ ad sales'},
+    {label:'TACOS', value: fmtPctRaw(a.tacos), sub:'spend ÷ total sales', accent:true},
+    {label:'CTR', value: fmtPct(a.ctr,2), sub: fmtInt(a.clicks)+' clicks'},
+    {label:'CVR', value: fmtPct(a.cvr), sub:'clicks → orders'},
+    {label:'ROAS', value: a.roas.toFixed(2)+'x', sub:'ad sales ÷ spend'},
+    {label:'Sessions', value: fmtInt(a.sessions), sub:'trailing '+wl},
+    {label:'Units sold', value: fmtInt(a.totalUnits), sub: fmtInt(a.impressions)+' impressions'},
+  ];
+  const wrap = document.getElementById('acctKpis');
+  wrap.innerHTML = tiles.map(t=>`
+    <div class="kpi ${t.accent?'accent':''}">
+      <div class="label">${t.label}</div>
+      <div class="value">${t.value}</div>
+      <div class="sub">${t.sub}</div>
+    </div>`).join('');
+}
+
+function renderSkuKpis(rows){
+  const sum = (k)=> rows.reduce((s,r)=> s + (r[k]||0), 0);
+  const totalSales = sum('totalSales'), adSpend = sum('adSpend'), adSales = sum('adSales');
+  const clicks = sum('clicks_calc_placeholder'); // not used
+  const impressions = rows.reduce((s,r)=>s+(r.impressions||0),0);
+  const clicksSum = rows.reduce((s,r)=>s+(r.clicks||0),0);
+  const orders = rows.reduce((s,r)=>s+(r.adOrders||0),0);
+  const acos = adSales? adSpend/adSales : 0;
+  const tacos = totalSales? adSpend/totalSales*100 : 0;
+  const ctr = impressions? clicksSum/impressions : 0;
+  const cvr = clicksSum? orders/clicksSum : 0;
+  const tiles = [
+    {label:'SKUs shown', value: rows.length, sub:'of 26 total'},
+    {label:'Total sales', value: fmtMoney(totalSales), sub:'sum of shown rows'},
+    {label:'Ad spend', value: fmtMoney(adSpend), sub:'', accent:true},
+    {label:'ACOS (blended)', value: fmtPct(acos), sub:''},
+    {label:'TACOS (blended)', value: fmtPctRaw(tacos), sub:'', accent:true},
+  ];
+  document.getElementById('skuKpis').innerHTML = tiles.map(t=>`
+    <div class="kpi ${t.accent?'accent':''}">
+      <div class="label">${t.label}</div>
+      <div class="value">${t.value}</div>
+      <div class="sub">${t.sub}</div>
+    </div>`).join('');
+  document.getElementById('skuCount').textContent = rows.length+' SKUs shown';
+}
+
+/* ---------------- Weekly sales bar chart ---------------- */
+function renderSalesBar(){
+  const svg = document.getElementById('salesBarChart');
+  const W=560,H=230, padL=54, padR=14, padT=14, padB=34;
+  const weeks = DATA.weekly;
+  const max = Math.max(...weeks.map(w=>w.sales));
+  const bw = (W-padL-padR)/weeks.length;
+  let gridLines = '';
+  const steps=4;
+  for(let i=0;i<=steps;i++){
+    const y = padT + (H-padT-padB)*(1-i/steps);
+    const val = max*i/steps;
+    gridLines += `<line class="grid-line" x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}"/>`;
+    gridLines += `<text class="axis-label" x="${padL-8}" y="${y+3}" text-anchor="end">${val>=1000?(val/1000).toFixed(0)+'k':val.toFixed(0)}</text>`;
+  }
+  let bars='';
+  weeks.forEach((w,i)=>{
+    const isPartial = i===weeks.length-1 && w.sessions < weeks[0].sessions*0.5;
+    const barH = (w.sales/max)*(H-padT-padB);
+    const x = padL + i*bw + bw*0.18;
+    const bwid = bw*0.64;
+    const y = H-padB-barH;
+    const label = new Date(w.period+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    bars += `<rect x="${x}" y="${y}" width="${bwid}" height="${barH}" rx="4" fill="${isPartial?'rgba(81,49,148,.35)':NAVY}" data-tip="${label}|$${Math.round(w.sales).toLocaleString()} sales${isPartial?' (partial week)':''}"/>`;
+    bars += `<text class="axis-label" x="${x+bwid/2}" y="${H-padB+16}" text-anchor="middle">${label}${isPartial?' *':''}</text>`;
+  });
+  svg.innerHTML = gridLines + bars;
+  attachBarTooltips(svg);
+}
+
+function renderTacosLine(){
+  const svg = document.getElementById('tacosLineChart');
+  const W=400,H=230,padL=40,padR=16,padT=16,padB=34;
+  const weeks = DATA.weekly.filter((w,i)=> i < DATA.weekly.length-1 || w.sessions > DATA.weekly[0].sessions*0.5); // drop partial
+  const points = weeks.map(w=> w.units>0 ? null : null); // placeholder
+  const tacosVals = weeks.map(w=> (w.sales>0 ? null : null));
+  // compute tacos per week using adSpend proportion? weekly adSpend not tracked separately, approximate with account-level ratio scaling by week sales share
+  // Instead compute using known account totals proportionally is inaccurate; show sales-based proxy: spend share not available weekly, so plot units/session (CVR proxy) as fallback metric labeled clearly
+  const max = Math.max(...weeks.map(w=>w.sessions? (w.units/w.sessions*100):0));
+  const min = 0;
+  let gridLines='';
+  const steps=4;
+  for(let i=0;i<=steps;i++){
+    const y = padT+(H-padT-padB)*(1-i/steps);
+    const val = max*i/steps;
+    gridLines += `<line class="grid-line" x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}"/>`;
+    gridLines += `<text class="axis-label" x="${padL-8}" y="${y+3}" text-anchor="end">${val.toFixed(1)}%</text>`;
+  }
+  const stepX = (W-padL-padR)/(weeks.length-1);
+  let path='', dots='';
+  weeks.forEach((w,i)=>{
+    const v = w.sessions? (w.units/w.sessions*100):0;
+    const x = padL+i*stepX;
+    const y = padT+(H-padT-padB)*(1-(v-min)/(max-min||1));
+    path += (i===0?'M':'L')+x+','+y+' ';
+    const label = new Date(w.period+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    dots += `<circle cx="${x}" cy="${y}" r="4.5" fill="${GOLD}" data-tip="${label}|Site CVR ${v.toFixed(1)}%"/>`;
+    dots += `<text class="axis-label" x="${x}" y="${H-padB+16}" text-anchor="middle">${label}</text>`;
+  });
+  svg.innerHTML = gridLines + `<path d="${path}" fill="none" stroke="${GOLD}" stroke-width="2.5" stroke-linejoin="round"/>` + dots;
+  attachBarTooltips(svg);
+  svg.parentElement.querySelector('.chart-title').textContent = 'Site conversion trend';
+  svg.parentElement.querySelector('.chart-note').textContent = 'Units ÷ sessions, by week (proxy while weekly ad-spend split is unavailable)';
+}
+
+function renderSqpChart(){
+  const svg = document.getElementById('sqpChart');
+  const W=560,H=220,padL=44,padR=16,padT=16,padB=34;
+  const periods = DATA.sqp.periods;
+  const series = [
+    {key:'imprShare', color:NAVY},
+    {key:'clickShare', color:GOLD},
+    {key:'purchShare', color:GREEN}
+  ];
+  const max = 0.7;
+  let gridLines='';
+  for(let i=0;i<=4;i++){
+    const y = padT+(H-padT-padB)*(1-i/4);
+    gridLines += `<line class="grid-line" x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}"/>`;
+    gridLines += `<text class="axis-label" x="${padL-8}" y="${y+3}" text-anchor="end">${Math.round(max*i/4*100)}%</text>`;
+  }
+  const stepX = (W-padL-padR)/(periods.length-1||1);
+  let content='';
+  series.forEach(s=>{
+    let path='', dots='';
+    periods.forEach((p,i)=>{
+      const v = p[s.key];
+      const x = padL+i*stepX;
+      const y = padT+(H-padT-padB)*(1-v/max);
+      path += (i===0?'M':'L')+x+','+y+' ';
+      const label = new Date(p.period+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      dots += `<circle cx="${x}" cy="${y}" r="4" fill="${s.color}" data-tip="${label}|${(v*100).toFixed(1)}%"/>`;
+    });
+    content += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round"/>${dots}`;
+  });
+  periods.forEach((p,i)=>{
+    const x = padL+i*stepX;
+    const label = new Date(p.period+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    content += `<text class="axis-label" x="${x}" y="${H-padB+16}" text-anchor="middle">${label}</text>`;
+  });
+  svg.innerHTML = gridLines + content;
+  attachBarTooltips(svg);
+}
+
+function renderFunnel(){
+  const a = DATA.account;
+  const steps = [
+    {label:'Impressions', value:a.impressions},
+    {label:'Clicks', value:a.clicks},
+    {label:'Ad orders', value:a.adOrders},
+  ];
+  const max = steps[0].value;
+  const html = steps.map((s,i)=>{
+    const pct = (s.value/max*100);
+    const conv = i>0 ? ((s.value/steps[i-1].value)*100).toFixed(2)+'% →' : '';
+    return `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--navy);font-weight:600;margin-bottom:4px;">
+          <span>${s.label}</span><span>${s.value.toLocaleString()}</span>
+        </div>
+        <div style="background:var(--ivory-2);border-radius:6px;height:14px;overflow:hidden;">
+          <div style="width:${pct}%;background:${i===0?NAVY:i===1?GOLD:GREEN};height:100%;border-radius:6px;"></div>
+        </div>
+        ${conv?`<div style="font-size:10.5px;color:var(--slate);opacity:.7;margin-top:3px;">${conv} conversion from previous step</div>`:''}
+      </div>`;
+  }).join('');
+  document.getElementById('funnelWrap').innerHTML = html;
+}
+
+const PACING_ACTION = {
+  ramp:     {cls:'status-good', label:'Ramp — push spend / sell down'},
+  hold:     {cls:'status-good', label:'Hold — on pace'},
+  throttle: {cls:'status-warn', label:'Throttle — pull spend back'},
+  pause:    {cls:'status-bad',  label:'Pause — stop ad spend'},
+};
+function renderPacing(){
+  const p = DATA.pacing;
+  const wrap = document.getElementById('pacingWrap');
+  if(!p){ wrap.innerHTML = '<div class="modal-empty">Inventory pacing data not available.</div>'; return; }
+  const act = PACING_ACTION[p.action] || {cls:'status-none', label:p.action};
+  const worstRow = p.worstSku ? DATA.skus.find(r=>r.sku===p.worstSku) : null;
+  wrap.innerHTML = `
+    <div class="kpi-grid" style="margin-bottom:14px;">
+      <div class="kpi"><div class="label">Available (sellable)</div><div class="value">${fmtInt(p.available)}</div><div class="sub">units, all SKUs blended</div></div>
+      <div class="kpi"><div class="label">Inbound</div><div class="value">${fmtInt(p.inbound)}</div><div class="sub">units en route to FBA</div></div>
+      <div class="kpi"><div class="label">Velocity</div><div class="value">${p.velocityPerDay.toLocaleString()}</div><div class="sub">units/day, account-wide</div></div>
+      <div class="kpi accent"><div class="label">Runway</div><div class="value">${p.runwayDays}d</div><div class="sub">at current velocity</div></div>
+      <div class="kpi"><div class="label">Runway w/ inbound</div><div class="value">${p.runwayWithInboundDays}d</div><div class="sub">once inbound lands</div></div>
+      <div class="kpi"><div class="label">Recommended action</div><div class="value"><span class="status-pill ${act.cls}">${act.label}</span></div><div class="sub">severity: ${p.severity}</div></div>
+    </div>
+    <div class="modal-section-note" style="margin:0 0 12px;">${p.rationale}</div>
+    ${worstRow ? `<div class="modal-section-note" style="margin:0;cursor:pointer;" id="pacingWorstLink"><b>Worst-runway SKU in this blend:</b> <span class="theme-tag">${worstRow.sku}</span> (${worstRow.asin}) — ~${p.worstAsinRunway}d runway at current pace. Click to open its full breakdown.</div>` : ''}
+  `;
+  const link = document.getElementById('pacingWorstLink');
+  if(link && worstRow){
+    link.addEventListener('click', ()=>{
+      document.querySelectorAll('#levelToggle button').forEach(b=>b.classList.remove('active'));
+      document.querySelector('#levelToggle button[data-level="sku"]').classList.add('active');
+      document.getElementById('accountView').classList.add('hidden');
+      document.getElementById('skuView').classList.remove('hidden');
+      document.getElementById('inventoryView').classList.add('hidden');
+      document.getElementById('searchWrap').style.visibility = 'visible';
+      openSkuDetail(worstRow.asin);
+    });
+  }
+}
+
+function renderAcctAdTypes(){
+  document.getElementById('acctAdTypesWrap').innerHTML = renderSkuAdTypeTable(DATA.acctAdTypes);
+}
+function renderAcctMatchTypes(){
+  document.getElementById('acctMatchTypesWrap').innerHTML = renderSkuMatchTypeTable(DATA.acctMatchTypes);
+}
+
+/* ---------------- BSR trend (account level) ---------------- */
+function bsrTrendPill(trend){
+  if(trend==='up') return '<span class="status-pill status-good">▲ improving</span>';
+  if(trend==='down') return '<span class="status-pill status-bad">▼ declining</span>';
+  return '<span class="status-pill status-warn">— stable</span>';
+}
+function renderBsrKpis(){
+  const rows = DATA.skus.filter(r=>r.bsrSummary);
+  const up = rows.filter(r=>r.bsrSummary.trend==='up').length;
+  const down = rows.filter(r=>r.bsrSummary.trend==='down').length;
+  const flat = rows.length - up - down;
+  const meta = DATA.bsrMeta || {};
+  const days = (meta.earliestDate && meta.latestDate) ? Math.round((new Date(meta.latestDate)-new Date(meta.earliestDate))/86400000) : null;
+  const tiles = [
+    {label:'Improving', value: up, sub:'BSR down >5% vs window start'},
+    {label:'Declining', value: down, sub:'BSR up >5% vs window start'},
+    {label:'Stable', value: flat, sub:'within ±5%'},
+    {label:'Look-back window', value: days? days+' days' : '—', sub: meta.earliestDate?('since '+meta.earliestDate):''},
+  ];
+  document.getElementById('bsrKpis').innerHTML = tiles.map(t=>`
+    <div class="kpi">
+      <div class="label">${t.label}</div>
+      <div class="value">${t.value}</div>
+      <div class="sub">${t.sub}</div>
+    </div>`).join('');
+  document.getElementById('bsrHint').textContent = rows.length+' of '+DATA.skus.length+' SKUs have rank history';
+}
+function renderBsrTable(){
+  const rows = DATA.skus.filter(r=>r.bsrSummary).slice().sort((a,b)=>{
+    const av = a.bsrSummary.pctChangeFull, bv = b.bsrSummary.pctChangeFull;
+    if(av===null) return 1; if(bv===null) return -1;
+    return bv-av;
+  });
+  const trs = rows.map(r=>{
+    const s = r.bsrSummary;
+    const fmtChg = (v)=> (v===null||v===undefined) ? '—' : (v>0?'+':'')+v.toFixed(1)+'%';
+    return `<tr data-asin="${r.asin}" style="cursor:pointer;">
+      <td><b>${r.sku}</b></td>
+      <td>${s.category}</td>
+      <td class="num">#${fmtInt(s.current)}</td>
+      <td class="num">#${fmtInt(s.rank30dAgo)}</td>
+      <td class="num">#${fmtInt(s.rankEarliest)}</td>
+      <td class="num">${fmtChg(s.pctChange30d)}</td>
+      <td class="num">${fmtChg(s.pctChangeFull)}</td>
+      <td>${bsrTrendPill(s.trend)}</td>
+    </tr>`;
+  }).join('');
+  const tbody = document.getElementById('bsrTbody');
+  tbody.innerHTML = trs;
+  tbody.querySelectorAll('tr[data-asin]').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      openSkuDetail(tr.dataset.asin);
+      document.querySelectorAll('.level-toggle button').forEach(b=>b.classList.remove('active'));
+      document.querySelector('.level-toggle button[data-level="sku"]').classList.add('active');
+    });
+  });
+}
+function renderSkuBsrLine(svg, bsrTrend){
+  const W=440,H=170,padL=48,padR=14,padT=10,padB=28;
+  const ranks = bsrTrend.map(w=>w.rank);
+  const min = Math.min(...ranks), max = Math.max(...ranks);
+  const span = (max-min)||1;
+  const padSpan = span*0.15;
+  const lo = Math.max(1, min-padSpan), hi = max+padSpan;
+  const stepX = (W-padL-padR)/((bsrTrend.length-1)||1);
+  let gridLines='';
+  const steps=3;
+  for(let i=0;i<=steps;i++){
+    const y = padT+(H-padT-padB)*(i/steps);
+    const val = lo + (hi-lo)*(i/steps);
+    gridLines += `<line class="grid-line" x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}"/>`;
+    gridLines += `<text class="axis-label" x="${padL-6}" y="${y+3}" text-anchor="end">#${Math.round(val)}</text>`;
+  }
+  let path='', dots='', labels='';
+  bsrTrend.forEach((w,i)=>{
+    const x = padL+i*stepX;
+    const y = padT+(H-padT-padB)*((w.rank-lo)/(hi-lo));
+    path += (i===0?'M':'L')+x.toFixed(1)+','+y.toFixed(1)+' ';
+    const label = new Date(w.period+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    dots += `<circle cx="${x}" cy="${y}" r="3.5" fill="${GREEN}" data-tip="${label}|BSR #${Math.round(w.rank)}"/>`;
+    labels += `<text class="axis-label" x="${x}" y="${H-padB+15}" text-anchor="middle">${label}</text>`;
+  });
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML = gridLines + `<path d="${path}" fill="none" stroke="${GREEN}" stroke-width="2" stroke-linejoin="round"/>` + dots + labels;
+  attachBarTooltips(svg);
+}
+
+/* ---------------- Top SKU bar chart ---------------- */
+function renderTopSkuChart(rows){
+  const noteEl = document.getElementById('topSkuNote');
+  if(noteEl) noteEl.textContent = 'Trailing '+windowLabel()+' · click any row in the table below to open a full SKU breakdown — sales, ads, weekly trend and keyword performance';
+  const svg = document.getElementById('topSkuChart');
+  const top = [...rows].sort((a,b)=>b.totalSales-a.totalSales).slice(0,10);
+  const W=700,H=330,padL=150,padR=70,padT=10,padB=10;
+  const max = Math.max(...top.map(r=>r.totalSales));
+  const rh = (H-padT-padB)/top.length;
+  let content='';
+  top.forEach((r,i)=>{
+    const y = padT + i*rh + rh*0.22;
+    const bh = rh*0.56;
+    const w = (r.totalSales/max)*(W-padL-padR);
+    content += `<text x="${padL-10}" y="${y+bh/2+4}" text-anchor="end" class="axis-label" style="font-weight:600;">${r.sku}</text>`;
+    content += `<rect x="${padL}" y="${y}" width="${w}" height="${bh}" rx="4" fill="${NAVY}" data-tip="${r.sku}|${fmtMoney(r.totalSales)} total sales · ACOS ${r.acos!==null?(r.acos*100).toFixed(0)+'%':'—'}"/>`;
+    content += `<text x="${padL+w+8}" y="${y+bh/2+4}" class="bar-val">${fmtMoney(r.totalSales)}</text>`;
+  });
+  svg.innerHTML = content;
+  attachBarTooltips(svg);
+}
+
+function attachBarTooltips(svg){
+  svg.querySelectorAll('[data-tip]').forEach(el=>{
+    el.addEventListener('mousemove', (e)=>{
+      const [t1,t2] = el.getAttribute('data-tip').split('|');
+      showTip(`<b>${t1}</b><br>${t2}`, e);
+    });
+    el.addEventListener('mouseleave', hideTip);
+  });
+}
+
+/* ---------------- Status pill helper ---------------- */
+function acosStatus(acos){
+  if(acos===null||acos===undefined) return {cls:'status-none', label:'—'};
+  const pct = acos*100;
+  if(pct <= 40) return {cls:'status-good', label:pct.toFixed(0)+'%'};
+  if(pct <= 80) return {cls:'status-warn', label:pct.toFixed(0)+'%'};
+  return {cls:'status-bad', label:pct.toFixed(0)+'%'};
+}
+
+/* ---------------- Table ---------------- */
+let sortState = {key:'totalSales', dir:-1};
+function renderTable(rows){
+  const tbody = document.getElementById('skuTbody');
+  const sorted = [...rows].sort((a,b)=>{
+    let av=a[sortState.key], bv=b[sortState.key];
+    if(av===null||av===undefined) av = -Infinity;
+    if(bv===null||bv===undefined) bv = -Infinity;
+    if(typeof av==='string') return av.localeCompare(bv)*sortState.dir;
+    return (av-bv)*sortState.dir;
+  });
+  tbody.innerHTML = sorted.map(r=>{
+    const st = acosStatus(r.acos);
+    return `<tr data-asin="${r.asin}">
+      <td class="sku-name">${r.sku}<div class="cat-tag">${r.asin}</div></td>
+      <td>${r.category || '<span class="muted">—</span>'}</td>
+      <td class="num">${r.bsr ? '#'+r.bsr.toLocaleString() : '<span class="muted">—</span>'}</td>
+      <td class="num">${fmtInt(r.sessions)}</td>
+      <td class="num">${fmtMoney(r.totalSales)}</td>
+      <td class="num">${fmtMoney(r.adSpend)}</td>
+      <td class="num">${fmtMoney(r.adSales)}</td>
+      <td class="num">${fmtPct(r.ctr,2)}</td>
+      <td class="num">${fmtPct(r.cvr)}</td>
+      <td class="num"><span class="status-pill ${st.cls}">${st.label}</span></td>
+      <td class="num">${r.tacos!==null?r.tacos.toFixed(1)+'%':'—'}</td>
+      <td class="num">${fmtInt(r.totalUnits)}</td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('#skuTable thead th').forEach(th=>{
+    th.classList.toggle('sorted', th.dataset.key===sortState.key);
+    const arrow = th.querySelector('.arrow');
+    if(th.dataset.key===sortState.key) arrow.textContent = sortState.dir===1?'▴':'▾';
+  });
+}
+
+document.querySelectorAll('#skuTable thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.key;
+    if(sortState.key===key) sortState.dir *= -1;
+    else { sortState.key = key; sortState.dir = -1; }
+    applyFilterAndRender();
+  });
+});
+
+/* ---------------- Inventory table ---------------- */
+const INV_STATUS = {
+  critical:   {cls:'status-bad',  label:'Order now'},
+  low:        {cls:'status-warn', label:'Order soon'},
+  healthy:    {cls:'status-good', label:'Healthy'},
+  overstock:  {cls:'status-over', label:'Overstock'},
+  no_velocity:{cls:'status-none', label:'No recent sales'},
+  no_data:    {cls:'status-none', label:'No reserve match'},
+};
+function invBySku(sku){
+  return (DATA.inventory && DATA.inventory.bySku || []).find(r=>r.sku===sku);
+}
+let invSortState = {key:'reserveCoverDays', dir:1};
+function renderInventoryKpis(rows){
+  const invRows = rows.map(r=>invBySku(r.sku)).filter(Boolean);
+  const count = (s)=> invRows.filter(r=>r.status===s).length;
+  const matchedRows = invRows.filter(r=>r.matched);
+  const totalUnits = matchedRows.reduce((s,r)=>s+Math.max(r.available,0),0);
+  const tiles = [
+    {label:'Order now', value: count('critical'), sub:'reserve at/near zero, or under lead time', accent:true},
+    {label:'Order soon', value: count('low'), sub:'inside the 150-day reorder point'},
+    {label:'Healthy', value: count('healthy'), sub:'150–270 days of cover'},
+    {label:'Overstock', value: count('overstock'), sub:'over 270 days of cover'},
+    {label:'No reserve match', value: count('no_data'), sub:'SKU mapping needs a manual check'},
+    {label:'Total reserve units', value: fmtInt(totalUnits), sub: matchedRows.length+' SKUs matched to 3PL'},
+  ];
+  document.getElementById('invKpis').innerHTML = tiles.map(t=>`
+    <div class="kpi ${t.accent?'accent':''}">
+      <div class="label">${t.label}</div>
+      <div class="value">${t.value}</div>
+      <div class="sub">${t.sub}</div>
+    </div>`).join('');
+  document.getElementById('invCount').textContent = rows.length+' SKUs shown';
+}
+function renderInventoryTable(rows){
+  const tbody = document.getElementById('invTbody');
+  const merged = rows.map(r=>{
+    const inv = invBySku(r.sku) || {};
+    return {sku:r.sku, asin:r.asin, category:r.category, available:inv.available, velocityPerDay:inv.velocityPerDay,
+             reserveCoverDays:inv.reserveCoverDays, status:inv.status||'no_data', expiry:inv.expiry, expiryRisk:inv.expiryRisk, note:inv.note};
+  });
+  const sorted = [...merged].sort((a,b)=>{
+    let av=a[invSortState.key], bv=b[invSortState.key];
+    if(av===null||av===undefined) av = -Infinity;
+    if(bv===null||bv===undefined) bv = -Infinity;
+    if(typeof av==='string') return av.localeCompare(bv)*invSortState.dir;
+    return (av-bv)*invSortState.dir;
+  });
+  tbody.innerHTML = sorted.map(r=>{
+    const st = INV_STATUS[r.status] || INV_STATUS.no_data;
+    const expiryLabel = r.expiry ? new Date(r.expiry+'T00:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '<span class="muted">—</span>';
+    return `<tr>
+      <td class="sku-name">${r.sku}<div class="cat-tag">${r.note || r.asin}</div></td>
+      <td>${r.category || '<span class="muted">—</span>'}</td>
+      <td class="num">${r.available!==null&&r.available!==undefined ? fmtInt(r.available) : '<span class="muted">—</span>'}</td>
+      <td class="num">${r.velocityPerDay!==null&&r.velocityPerDay!==undefined ? r.velocityPerDay.toFixed(1) : '<span class="muted">—</span>'}</td>
+      <td class="num">${r.reserveCoverDays!==null&&r.reserveCoverDays!==undefined ? Math.round(r.reserveCoverDays)+'d' : '<span class="muted">—</span>'}</td>
+      <td class="num"><span class="status-pill ${st.cls}">${st.label}</span></td>
+      <td class="num">${expiryLabel}${r.expiryRisk?' <span class="status-pill status-bad" title="Sells through after this lot expires at current velocity">⚠ expiry risk</span>':''}</td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('#invTable thead th').forEach(th=>{
+    th.classList.toggle('sorted', th.dataset.key===invSortState.key);
+    const arrow = th.querySelector('.arrow');
+    if(th.dataset.key===invSortState.key) arrow.textContent = invSortState.dir===1?'▴':'▾';
+  });
+}
+document.querySelectorAll('#invTable thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.key;
+    if(invSortState.key===key) invSortState.dir *= -1;
+    else { invSortState.key = key; invSortState.dir = key==='sku'||key==='category'||key==='status'?-1:1; }
+    applyFilterAndRender();
+  });
+});
+
+/* ---------------- Profitability table ---------------- */
+let marginSortState = {key:'marginPct', dir:1};
+function renderMarginKpis(rows){
+  const titleEl = document.getElementById('marginKpisTitle');
+  if(titleEl) titleEl.textContent = 'Profitability — last '+windowLabel();
+  const withCogs = rows.filter(r=>r.cogsPerUnit!==null && r.cogsPerUnit!==undefined);
+  const totalSales = withCogs.reduce((s,r)=>s+(r.totalSales||0),0);
+  const totalCogs = withCogs.reduce((s,r)=>s+(r.cogsPerUnit*(r.totalUnits||0)),0);
+  const totalReferral = totalSales*REFERRAL_RATE;
+  const totalAdSpend = withCogs.reduce((s,r)=>s+(r.adSpend||0),0);
+  const grossProfit = totalSales - totalCogs - totalReferral - totalAdSpend;
+  const marginPct = totalSales? (grossProfit/totalSales*100) : null;
+  const st = marginStatus(marginPct);
+  const tiles = [
+    {label:'Sales (COGS-matched SKUs)', value: fmtMoney(totalSales), sub: withCogs.length+' of '+rows.length+' SKUs have COGS'},
+    {label:'COGS', value: fmtMoney(totalCogs), sub:'units × landed cost/unit'},
+    {label:'Referral fee (15%, assumed)', value: fmtMoney(totalReferral), sub:'Amazon standard'},
+    {label:'Ad spend', value: fmtMoney(totalAdSpend), sub:'trailing '+windowLabel(), accent:true},
+    {label:'Gross profit', value: fmtMoney(grossProfit), sub:'sales − COGS − referral − ads', accent:true},
+    {label:'Margin', value: `<span class="status-pill ${st.cls}">${st.label}</span>`, sub:'excludes FBA/storage fees'},
+  ];
+  document.getElementById('marginKpis').innerHTML = tiles.map(t=>`
+    <div class="kpi ${t.accent?'accent':''}">
+      <div class="label">${t.label}</div>
+      <div class="value">${t.value}</div>
+      <div class="sub">${t.sub}</div>
+    </div>`).join('');
+  document.getElementById('marginHint').textContent = rows.length+' SKUs shown';
+}
+function renderMarginTable(rows){
+  const tbody = document.getElementById('marginTbody');
+  const merged = rows.map(r=>{
+    const m = computeMargin(r);
+    return {sku:r.sku, asin:r.asin, category:r.category, cogsPerUnit:r.cogsPerUnit, cogsAsOf:r.cogsAsOf,
+      totalSales:r.totalSales, adSpend:r.adSpend,
+      cogsTotal: m?m.cogsTotal:null, referralTotal: m?m.referralTotal:null,
+      grossProfit: m?m.grossProfit:null, marginPct: m?m.marginPct:null, profitPerUnit: m?m.profitPerUnit:null};
+  });
+  const sorted = [...merged].sort((a,b)=>{
+    let av=a[marginSortState.key], bv=b[marginSortState.key];
+    if(av===null||av===undefined) av = -Infinity;
+    if(bv===null||bv===undefined) bv = -Infinity;
+    if(typeof av==='string') return av.localeCompare(bv)*marginSortState.dir;
+    return (av-bv)*marginSortState.dir;
+  });
+  tbody.innerHTML = sorted.map(r=>{
+    const st = marginStatus(r.marginPct);
+    const noCogs = r.cogsPerUnit===null || r.cogsPerUnit===undefined;
+    return `<tr>
+      <td class="sku-name">${r.sku}<div class="cat-tag">${r.asin}</div></td>
+      <td>${r.category || '<span class="muted">—</span>'}</td>
+      <td class="num">${noCogs?'<span class="muted">—</span>':fmtMoney2(r.cogsPerUnit)}</td>
+      <td class="num">${fmtMoney(r.totalSales)}</td>
+      <td class="num">${noCogs?'<span class="muted">—</span>':fmtMoney(r.cogsTotal)}</td>
+      <td class="num">${noCogs?'<span class="muted">—</span>':fmtMoney(r.referralTotal)}</td>
+      <td class="num">${fmtMoney(r.adSpend)}</td>
+      <td class="num">${noCogs?'<span class="muted">—</span>':fmtMoney(r.grossProfit)}</td>
+      <td class="num">${noCogs?'<span class="status-pill status-none">no COGS</span>':`<span class="status-pill ${st.cls}">${st.label}</span>`}</td>
+      <td class="num">${(noCogs||r.profitPerUnit===null)?'<span class="muted">—</span>':fmtMoney2(r.profitPerUnit)}</td>
+    </tr>`;
+  }).join('');
+  document.querySelectorAll('#marginTable thead th').forEach(th=>{
+    th.classList.toggle('sorted', th.dataset.key===marginSortState.key);
+    const arrow = th.querySelector('.arrow');
+    if(th.dataset.key===marginSortState.key) arrow.textContent = marginSortState.dir===1?'▴':'▾';
+  });
+}
+document.querySelectorAll('#marginTable thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.key;
+    if(marginSortState.key===key) marginSortState.dir *= -1;
+    else { marginSortState.key = key; marginSortState.dir = key==='sku'||key==='category'?-1:1; }
+    applyFilterAndRender();
+  });
+});
+
+function currentFilteredRows(){
+  const q = document.getElementById('skuSearch').value.trim().toLowerCase();
+  const base = !q ? DATA.skus : DATA.skus.filter(r =>
+    r.sku.toLowerCase().includes(q) ||
+    r.asin.toLowerCase().includes(q) ||
+    (r.category||'').toLowerCase().includes(q)
+  );
+  return base.map(getSkuView);
+}
+
+function applyFilterAndRender(){
+  const rows = currentFilteredRows();
+  renderTable(rows);
+  renderSkuKpis(rows);
+  renderTopSkuChart(rows);
+  renderInventoryTable(rows);
+  renderInventoryKpis(rows);
+  renderMarginTable(rows);
+  renderMarginKpis(rows);
+}
+
+document.getElementById('skuSearch').addEventListener('input', applyFilterAndRender);
+
+document.getElementById('windowToggle').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  WINDOW_MODE = btn.dataset.window;
+  document.querySelectorAll('#windowToggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSnapshotBadge();
+  renderAcctKpis();
+  applyFilterAndRender();
+});
+
+/* ---------------- Level toggle ---------------- */
+document.getElementById('levelToggle').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  document.querySelectorAll('#levelToggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const level = btn.dataset.level;
+  document.getElementById('accountView').classList.toggle('hidden', level!=='account');
+  document.getElementById('skuView').classList.toggle('hidden', level!=='sku');
+  document.getElementById('inventoryView').classList.toggle('hidden', level!=='inventory');
+  document.getElementById('profitabilityView').classList.toggle('hidden', level!=='profitability');
+  document.getElementById('searchWrap').style.visibility = (level==='sku'||level==='inventory'||level==='profitability') ? 'visible' : 'hidden';
+});
+document.getElementById('searchWrap').style.visibility = 'hidden';
+
+/* ---------------- SKU detail modal ---------------- */
+function renderSkuWeeklyBar(svg, weekly){
+  const W=440,H=170,padL=48,padR=10,padT=10,padB=28;
+  const max = Math.max(...weekly.map(w=>w.sales),1);
+  const bw = (W-padL-padR)/weekly.length;
+  let gridLines='';
+  const steps=3;
+  for(let i=0;i<=steps;i++){
+    const y = padT+(H-padT-padB)*(1-i/steps);
+    const val = max*i/steps;
+    gridLines += `<line class="grid-line" x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}"/>`;
+    gridLines += `<text class="axis-label" x="${padL-6}" y="${y+3}" text-anchor="end">${val>=1000?(val/1000).toFixed(1)+'k':val.toFixed(0)}</text>`;
+  }
+  let bars='';
+  weekly.forEach((w,i)=>{
+    const isPartial = i===weekly.length-1 && w.sessions < (weekly[0].sessions||1)*0.5;
+    const barH = (w.sales/max)*(H-padT-padB);
+    const x = padL+i*bw+bw*0.18;
+    const bwid = bw*0.64;
+    const y = H-padB-barH;
+    const label = new Date(w.period+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    bars += `<rect x="${x}" y="${y}" width="${bwid}" height="${barH}" rx="3" fill="${isPartial?'rgba(81,49,148,.35)':NAVY}" data-tip="${label}|${fmtMoney(w.sales)} sales · ${fmtInt(w.units)} units${isPartial?' (partial week)':''}"/>`;
+    bars += `<text class="axis-label" x="${x+bwid/2}" y="${H-padB+15}" text-anchor="middle">${label}${isPartial?' *':''}</text>`;
+  });
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML = gridLines+bars;
+  attachBarTooltips(svg);
+}
+
+function renderSkuWeeklyLine(svg, weekly){
+  const W=440,H=170,padL=42,padR=14,padT=10,padB=28;
+  const max = Math.max(...weekly.map(w=>w.sessions),1);
+  const stepX = (W-padL-padR)/((weekly.length-1)||1);
+  let gridLines='';
+  const steps=3;
+  for(let i=0;i<=steps;i++){
+    const y = padT+(H-padT-padB)*(1-i/steps);
+    const val = max*i/steps;
+    gridLines += `<line class="grid-line" x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}"/>`;
+    gridLines += `<text class="axis-label" x="${padL-6}" y="${y+3}" text-anchor="end">${fmtInt(val)}</text>`;
+  }
+  let path='', dots='', labels='';
+  weekly.forEach((w,i)=>{
+    const x = padL+i*stepX;
+    const y = padT+(H-padT-padB)*(1-(w.sessions/max));
+    path += (i===0?'M':'L')+x.toFixed(1)+','+y.toFixed(1)+' ';
+    const label = new Date(w.period+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    dots += `<circle cx="${x}" cy="${y}" r="3.5" fill="${GOLD}" data-tip="${label}|${fmtInt(w.sessions)} sessions"/>`;
+    labels += `<text class="axis-label" x="${x}" y="${H-padB+15}" text-anchor="middle">${label}</text>`;
+  });
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML = gridLines + `<path d="${path}" fill="none" stroke="${GOLD}" stroke-width="2" stroke-linejoin="round"/>` + dots + labels;
+  attachBarTooltips(svg);
+}
+
+function renderSkuCampaignsTable(campaigns){
+  if(!campaigns || !campaigns.length){
+    return '<div class="modal-empty">No campaign-level advertising activity for this SKU in the selected window.</div>';
+  }
+  const rows = campaigns.map(c=>{
+    const st = acosStatus(c.acos);
+    return `<tr>
+      <td><span class="theme-tag">${c.theme || c.campaignName || '—'}</span><span class="match-tag">${c.matchType||''}</span></td>
+      <td class="num">${fmtInt(c.impressions)}</td>
+      <td class="num">${fmtInt(c.clicks)}</td>
+      <td class="num">${fmtMoney(c.spend)}</td>
+      <td class="num">${fmtMoney(c.sales)}</td>
+      <td class="num">${fmtPct(c.ctr,2)}</td>
+      <td class="num">${fmtPct(c.cvr)}</td>
+      <td class="num"><span class="status-pill ${st.cls}">${st.label}</span></td>
+      <td class="num">${(c.roas!==null&&c.roas!==undefined)?c.roas.toFixed(2)+'x':'—'}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Keyword / theme</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">Spend</th>
+      <th class="num">Sales</th><th class="num">CTR</th><th class="num">CVR</th><th class="num">ACOS</th><th class="num">ROAS</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function renderSkuAdTypeTable(adTypes){
+  if(!adTypes || !adTypes.length){
+    return '<div class="modal-empty">No ad-type-level advertising activity for this SKU in the selected window.</div>';
+  }
+  const rows = adTypes.map(a=>{
+    const st = acosStatus(a.acos);
+    return `<tr>
+      <td><span class="theme-tag">${a.label}</span><span class="match-tag">${a.adType}</span></td>
+      <td class="num">${fmtInt(a.impressions)}</td>
+      <td class="num">${fmtInt(a.clicks)}</td>
+      <td class="num">${fmtMoney(a.spend)}</td>
+      <td class="num">${fmtMoney(a.sales)}</td>
+      <td class="num">${fmtPct(a.ctr,2)}</td>
+      <td class="num">${fmtPct(a.cvr)}</td>
+      <td class="num"><span class="status-pill ${st.cls}">${st.label}</span></td>
+      <td class="num">${(a.roas!==null&&a.roas!==undefined)?a.roas.toFixed(2)+'x':'—'}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Ad type</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">Spend</th>
+      <th class="num">Sales</th><th class="num">CTR</th><th class="num">CVR</th><th class="num">ACOS</th><th class="num">ROAS</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function renderSkuMatchTypeTable(matchTypes){
+  if(!matchTypes || !matchTypes.length){
+    return '<div class="modal-empty">No match-type-classifiable advertising activity for this SKU in the selected window.</div>';
+  }
+  const rows = matchTypes.map(m=>{
+    const st = acosStatus(m.acos);
+    return `<tr>
+      <td><span class="theme-tag">${m.label}</span></td>
+      <td class="num">${fmtInt(m.impressions)}</td>
+      <td class="num">${fmtInt(m.clicks)}</td>
+      <td class="num">${fmtMoney(m.spend)}</td>
+      <td class="num">${fmtMoney(m.sales)}</td>
+      <td class="num">${fmtPct(m.ctr,2)}</td>
+      <td class="num">${fmtPct(m.cvr)}</td>
+      <td class="num"><span class="status-pill ${st.cls}">${st.label}</span></td>
+      <td class="num">${(m.roas!==null&&m.roas!==undefined)?m.roas.toFixed(2)+'x':'—'}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Match / targeting type</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">Spend</th>
+      <th class="num">Sales</th><th class="num">CTR</th><th class="num">CVR</th><th class="num">ACOS</th><th class="num">ROAS</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function openSkuDetail(asin){
+  const base = DATA.skus.find(r=>r.asin===asin);
+  if(!base) return;
+  const row = getSkuView(base);
+
+  document.getElementById('mhTitle').textContent = row.sku;
+  document.getElementById('mhSub').innerHTML = `${row.asin} &middot; <b>${row.category||'Uncategorized'}</b>${row.bsr?' &middot; BSR #'+row.bsr.toLocaleString():''}`;
+
+  const st = acosStatus(row.acos);
+  const wl = windowLabel();
+  const kpiTiles = [
+    {label:'Total sales', value: fmtMoney(row.totalSales), sub: fmtInt(row.totalUnits)+' units'},
+    {label:'Ad sales', value: fmtMoney(row.adSales), sub: fmtInt(row.adOrders)+' ad orders'},
+    {label:'Ad spend', value: fmtMoney(row.adSpend), sub:'trailing '+wl, accent:true},
+    {label:'ACOS', value: st.label, sub:'spend ÷ ad sales'},
+    {label:'TACOS', value: (row.tacos!==null&&row.tacos!==undefined)?row.tacos.toFixed(1)+'%':'—', sub:'spend ÷ total sales', accent:true},
+    {label:'CTR', value: fmtPct(row.ctr,2), sub: fmtInt(row.clicks)+' clicks'},
+    {label:'CVR', value: fmtPct(row.cvr), sub:'clicks → orders'},
+    {label:'ROAS', value: (row.roas!==null&&row.roas!==undefined)?row.roas.toFixed(2)+'x':'—', sub:'ad sales ÷ spend'},
+    {label:'Sessions', value: fmtInt(row.sessions), sub:'trailing '+wl},
+    {label:'Impressions', value: fmtInt(row.impressions), sub:'ad-attributed'},
+  ];
+  const kpiHtml = `<div class="kpi-grid">${kpiTiles.map(t=>`
+    <div class="kpi ${t.accent?'accent':''}">
+      <div class="label">${t.label}</div>
+      <div class="value">${t.value}</div>
+      <div class="sub">${t.sub}</div>
+    </div>`).join('')}</div>`;
+
+  let weeklyHtml = '';
+  if(row.weekly && row.weekly.length > 1){
+    weeklyHtml = `
+    <div class="modal-section-title">Weekly trend</div>
+    <div class="modal-section-note">Sales/units and sessions by week from Sales &amp; Traffic — last point may be a partial week in progress.</div>
+    <div class="two-col">
+      <div class="card" style="padding:14px 16px;">
+        <div class="chart-title" style="font-size:12px;">Sales by week</div>
+        <svg id="mhSalesChart" width="100%" height="170"></svg>
+      </div>
+      <div class="card" style="padding:14px 16px;">
+        <div class="chart-title" style="font-size:12px;">Sessions by week</div>
+        <svg id="mhSessionsChart" width="100%" height="170"></svg>
+      </div>
+    </div>`;
+  }
+
+  let bsrHtml = '';
+  if(row.bsrTrend && row.bsrTrend.length > 1){
+    const s = row.bsrSummary;
+    const fmtChg = (v)=> (v===null||v===undefined) ? '—' : (v>0?'+':'')+v.toFixed(1)+'%';
+    bsrHtml = `
+    <div class="modal-section-title">BSR trend — market position</div>
+    <div class="modal-section-note">Best Sellers Rank in <b>${s.category}</b> — lower is better, so an upward line is improving. Current #${fmtInt(s.current)}, vs #${fmtInt(s.rank30dAgo)} ~30 days ago (${fmtChg(s.pctChange30d)}) and #${fmtInt(s.rankEarliest)} at the start of the available window (${fmtChg(s.pctChangeFull)}). ${bsrTrendPill(s.trend)}</div>
+    <div class="card" style="padding:14px 16px;">
+      <div class="chart-title" style="font-size:12px;">Weekly average BSR</div>
+      <svg id="mhBsrChart" width="100%" height="170"></svg>
+    </div>`;
+  }
+
+  let marginHtml = '';
+  const mm = computeMargin(row);
+  if(mm){
+    const mst = marginStatus(mm.marginPct);
+    marginHtml = `
+    <div class="modal-section-title">Profitability</div>
+    <div class="modal-section-note">COGS/unit from your Sellerboard cost sheet (as of ${row.cogsAsOf||'—'}); referral fee assumed flat 15%; excludes FBA fulfillment/storage fees.</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="label">COGS/unit</div><div class="value">${fmtMoney2(mm.cogsPerUnit)}</div><div class="sub">landed cost</div></div>
+      <div class="kpi"><div class="label">COGS total</div><div class="value">${fmtMoney(mm.cogsTotal)}</div><div class="sub">${fmtInt(mm.units)} units</div></div>
+      <div class="kpi"><div class="label">Referral fee (15%)</div><div class="value">${fmtMoney(mm.referralTotal)}</div><div class="sub">assumed</div></div>
+      <div class="kpi accent"><div class="label">Gross profit</div><div class="value">${fmtMoney(mm.grossProfit)}</div><div class="sub">sales − COGS − referral − ads</div></div>
+      <div class="kpi"><div class="label">Margin</div><div class="value"><span class="status-pill ${mst.cls}">${mst.label}</span></div><div class="sub">excl. FBA/storage fees</div></div>
+      <div class="kpi"><div class="label">Profit/unit</div><div class="value">${(mm.profitPerUnit!==null)?fmtMoney2(mm.profitPerUnit):'—'}</div><div class="sub">gross profit ÷ units</div></div>
+    </div>`;
+  } else if(row.cogsPerUnit===null || row.cogsPerUnit===undefined){
+    marginHtml = `
+    <div class="modal-section-title">Profitability</div>
+    <div class="modal-empty">No COGS on file for this SKU in the uploaded cost sheet.</div>`;
+  }
+
+  const campaignsHtml = `
+    <div class="modal-section-title">Keyword / campaign performance</div>
+    <div class="modal-section-note">Top campaigns by spend for this SKU. "Keyword/theme" is parsed from the account's campaign-naming convention — Data Brill Core's direct keyword (target) grouping is currently unavailable for this account, so campaign-level data is the closest available proxy.</div>
+    ${renderSkuCampaignsTable(row.campaigns)}`;
+
+  const adTypesHtml = `
+    <div class="modal-section-title">Performance by ad type</div>
+    <div class="modal-section-note">Sponsored Products (SP), Sponsored Brands (SB/SBV) and Sponsored Display (SD), ranked by spend. Placement-level detail (Top of Search / Product Pages / Rest of Search) isn't shown — Data Brill Core's placement grouping is currently broken for this account (backend error on every pull, same class of issue as the keyword/target grouping); ad type is the closest breakdown available until that's fixed.</div>
+    ${renderSkuAdTypeTable(row.adTypes)}`;
+
+  const matchTypesHtml = `
+    <div class="modal-section-title">Performance by match / targeting type</div>
+    <div class="modal-section-note">Exact, phrase, broad and auto — plus manual product/category targeting and Display targeting — classified from every campaign's spend for this SKU using the account's campaign-naming convention (e.g. "GT SPKE" = exact, "SPKB" = broad, "SPAQL/SPAQC/SPAAS/SPAAC" = auto). This is a full campaign-level pull, not just the top campaigns shown above. Data Brill Core doesn't expose native match-type as a field for this account, so naming-convention classification is the closest available proxy — a handful of legacy-named campaigns (labelled "Other / unclassified") couldn't be confidently classified this way.</div>
+    ${renderSkuMatchTypeTable(row.matchTypes)}`;
+
+  document.getElementById('mhBody').innerHTML = kpiHtml + weeklyHtml + marginHtml + bsrHtml + campaignsHtml + adTypesHtml + matchTypesHtml;
+
+  if(row.weekly && row.weekly.length > 1){
+    renderSkuWeeklyBar(document.getElementById('mhSalesChart'), row.weekly);
+    renderSkuWeeklyLine(document.getElementById('mhSessionsChart'), row.weekly);
+  }
+  if(row.bsrTrend && row.bsrTrend.length > 1){
+    renderSkuBsrLine(document.getElementById('mhBsrChart'), row.bsrTrend);
+  }
+
+  document.getElementById('skuModalOverlay').classList.remove('hidden');
+}
+function closeSkuDetail(){
+  document.getElementById('skuModalOverlay').classList.add('hidden');
+}
+document.getElementById('mhClose').addEventListener('click', closeSkuDetail);
+document.getElementById('skuModalOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='skuModalOverlay') closeSkuDetail();
+});
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSkuDetail(); });
+document.getElementById('skuTbody').addEventListener('click', (e)=>{
+  const tr = e.target.closest('tr[data-asin]');
+  if(tr) openSkuDetail(tr.dataset.asin);
+});
+
+/* ---------------- Init ---------------- */
+function safe(name, fn){ try{ fn(); } catch(e){ console.error(name, e.message); } }
+safe('updateSnapshotBadge', updateSnapshotBadge);
+safe('renderAcctKpis', renderAcctKpis);
+safe('renderSalesBar', renderSalesBar);
+safe('renderTacosLine', renderTacosLine);
+safe('renderSqpChart', renderSqpChart);
+safe('renderFunnel', renderFunnel);
+safe('renderAcctAdTypes', renderAcctAdTypes);
+safe('renderAcctMatchTypes', renderAcctMatchTypes);
+safe('renderBsrKpis', renderBsrKpis);
+safe('renderBsrTable', renderBsrTable);
+safe('renderPacing', renderPacing);
+safe('applyFilterAndRender', applyFilterAndRender);
+</script>
+
+</body>
+</html>
