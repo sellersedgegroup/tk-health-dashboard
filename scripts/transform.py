@@ -1,5 +1,9 @@
-import json, re, math, datetime
+import json, re, math, datetime, sys, os
 from collections import defaultdict
+
+sys.path.insert(0, os.path.dirname(__file__))
+import build_sellerboard
+import build_extras
 
 R = '/tmp/refresh/'
 
@@ -312,7 +316,39 @@ out = {
     'marginMeta': marginMeta_carry,
 }
 
+# ---- Sellerboard (Profitability tab): net profit, margin, ROI, FBA stock, S&S ----
+cur_inventory_by_sku = {r['sku']: r for r in inventory_carry.get('bySku', []) if r.get('sku')}
+try:
+    sb_raw_30d = json.load(open(R+'sb_raw_30d.json'))
+    sb_raw_7d = json.load(open(R+'sb_raw_7d.json'))
+    products30, totals30 = build_sellerboard.build(sb_raw_30d, cur_skus_by_asin, cur_inventory_by_sku)
+    products7, totals7 = build_sellerboard.build(sb_raw_7d, cur_skus_by_asin, cur_inventory_by_sku)
+    out['sellerboard'] = {
+        'meta30': out['meta'], 'meta7': out['meta7d'],
+        'products30': products30, 'products7': products7,
+        'totals30': totals30, 'totals7': totals7,
+    }
+    # sanity check: aggregated total should be within 1% of the account-level total
+    # Sellerboard itself reports (fetched separately via dashboard_period) -- if you
+    # have that figure handy, compare it here before trusting the splice.
+except FileNotFoundError as e:
+    print("WARNING: Sellerboard raw pulls missing, carrying forward existing Profitability tab data:", e)
+    out['sellerboard'] = cur.get('sellerboard')
+
+# ---- WoW comparison, per-SKU impression share trend, monthly trend ----
+try:
+    tracked_asins = {s['asin'] for s in skus}
+    extras = build_extras.build(out['account7d'], out['meta7d'], tracked_asins)
+    out.update(extras)
+except FileNotFoundError as e:
+    print("WARNING: extras raw pulls missing, carrying forward existing wow/sqpBySku/monthlyTrend:", e)
+    for k in ('wow', 'sqpBySku', 'monthlyTrend'):
+        if k in cur:
+            out[k] = cur[k]
+
 json.dump(out, open(R+'metrics_out.json','w'))
 print("Wrote metrics_out.json, skus:", len(skus))
 print("account:", out['account'])
 print("account7d:", out['account7d'])
+print("sellerboard products30:", len(out.get('sellerboard', {}).get('products30', [])))
+print("monthlyTrend months:", len(out.get('monthlyTrend', [])))
