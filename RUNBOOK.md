@@ -128,6 +128,87 @@ expected, not an error. `build_extras.py` handles however many months come
 back and will start computing real YoY deltas automatically once a given
 month has a matching month 12 back in the data.
 
+## 2f. Shopify (Omnichannel tab): retail / wholesale / Faire, account + per-SKU
+
+Pure Micronutrients sells through Shopify as well as Amazon, split into three
+channels identified by **Shopify order tags** (not a separate connector or
+sales-channel field): orders tagged `Faire` are the Faire wholesale
+marketplace, orders tagged `Wholesale` (without `Faire`) are direct wholesale,
+everything else on the storefront is `retail`. Orders tagged `amazon` are
+FBA/MCF orders that sync into Shopify for fulfillment — **always excluded**,
+since they're already counted in the Amazon data pulled in step 2a; including
+them here would double-count.
+
+There are three Shopify connectors in this Data Brill Core workspace that all
+feed tracked SKUs (a handful of SKUs — the `BLYS-*` and `PDC/PDS-*` ones — are
+cross-sold through the sibling Blyss Nutrition / Pure Dogs Co stores, not just
+the main Pure Micronutrients store): `01a01613-8a8c-773f-9b5f-50d601eb1bbf`
+(Pure Micronutrients), `01a0163a-4ec3-71ea-9eee-101cabc3147b` (Blyss
+Nutrition), `01a0163b-11b8-7691-be57-f3fd43fef128` (Pure Dogs Co). Always
+query all three together.
+
+Use `mcp__DataBrill_Core__executeSql` (read-only SQL) — align the date bounds
+to the **same** `dateFirst`/`dateLast` already used for the Amazon 30d/7d
+pulls in step 2a (`d30_start`/`lastDate` and `d7_start`/`lastDate`), so the
+Omnichannel tab's Amazon and Shopify figures cover the same window. Use
+`>= '{start}T00:00:00Z' AND < '{end+1 day}T00:00:00Z'` (i.e. the day after
+`lastDate`, exclusive) for each window.
+
+1. Channel + SKU + title breakdown (one call per window — 30d, then 7d):
+
+```sql
+SELECT
+  CASE
+    WHEN EXISTS (SELECT 1 FROM jsonb_array_elements_text(o.doc->'tags') t WHERE t='Faire') THEN 'faire'
+    WHEN EXISTS (SELECT 1 FROM jsonb_array_elements_text(o.doc->'tags') t WHERE t='Wholesale') THEN 'wholesale'
+    WHEN EXISTS (SELECT 1 FROM jsonb_array_elements_text(o.doc->'tags') t WHERE t='amazon') THEN 'exclude_amazon_sync'
+    ELSE 'retail'
+  END AS channel,
+  li.sku AS shopify_sku, li.title AS title,
+  count(DISTINCT o.id) AS orders, sum(li.quantity) AS units, sum(li."discountedTotalAmount") AS sales
+FROM "shopify_orders_v1__OrderLineItem" li
+JOIN "shopify_orders_v1__Order" o ON o.id = li."orderGid"
+WHERE o."connectorId" IN ('01a01613-8a8c-773f-9b5f-50d601eb1bbf','01a0163a-4ec3-71ea-9eee-101cabc3147b','01a0163b-11b8-7691-be57-f3fd43fef128')
+  AND o.test = false
+  AND o."shopifyCreatedAt" >= '{start}T00:00:00Z' AND o."shopifyCreatedAt" < '{end_exclusive}T00:00:00Z'
+GROUP BY 1,2,3
+```
+
+Save as `/tmp/refresh/shopify_channel_sku_30d.json` / `_7d.json` — a flat
+JSON list of the returned rows (`channel`, `shopify_sku`, `title`, `orders`,
+`units`, `sales`). **Ignore the `orders` field on these rows when building
+channel totals** — it double-counts any order with more than one line item.
+
+2. Accurate per-channel order counts (one call per window):
+
+```sql
+SELECT
+  CASE
+    WHEN EXISTS (SELECT 1 FROM jsonb_array_elements_text(o.doc->'tags') t WHERE t='Faire') THEN 'faire'
+    WHEN EXISTS (SELECT 1 FROM jsonb_array_elements_text(o.doc->'tags') t WHERE t='Wholesale') THEN 'wholesale'
+    WHEN EXISTS (SELECT 1 FROM jsonb_array_elements_text(o.doc->'tags') t WHERE t='amazon') THEN 'exclude_amazon_sync'
+    ELSE 'retail'
+  END AS channel,
+  count(*) AS distinct_orders
+FROM "shopify_orders_v1__Order" o
+WHERE o."connectorId" IN ('01a01613-8a8c-773f-9b5f-50d601eb1bbf','01a0163a-4ec3-71ea-9eee-101cabc3147b','01a0163b-11b8-7691-be57-f3fd43fef128')
+  AND o.test = false
+  AND o."shopifyCreatedAt" >= '{start}T00:00:00Z' AND o."shopifyCreatedAt" < '{end_exclusive}T00:00:00Z'
+GROUP BY 1
+```
+
+Save as `/tmp/refresh/shopify_orders_by_channel_30d.json` / `_7d.json`, reshaped
+to a plain dict `{"retail": N, "wholesale": N, "faire": N}` (drop the
+`exclude_amazon_sync` row; default any missing channel to 0).
+
+`scripts/build_shopify.py` maps each `shopify_sku` to a tracked Amazon SKU
+via its `SHOPIFY_SKU_MAP` constant (best-effort, built from observed
+product titles — not a guaranteed-exhaustive catalog match). If a *new*
+Shopify SKU shows up carrying real product revenue in the `otherUntracked`
+bucket (check `DATA.shopify.otherUntracked30` after a refresh), add it to
+that map rather than leaving it unattributed. Bundles and the "Shipping
+Protection" add-on are expected to stay unmapped — that's correct, not a bug.
+
 ## 3. Run the transform + splice scripts
 
 ```
@@ -151,6 +232,9 @@ cd /tmp/gh_repo && python3 scripts/transform.py && python3 scripts/splice.py
 - Calls `scripts/build_extras.py` on the step 2c/2d/2e raw pulls to build the
   `wow`, `sqpBySku`, and `monthlyTrend` blocks. Same graceful-fallback behavior
   if those raw files are missing.
+- Calls `scripts/build_shopify.py` on the step 2f raw pulls to build the
+  `shopify` block (Omnichannel tab). Same graceful-fallback behavior if those
+  raw files are missing.
 
 `splice.py` writes the new JSON blob into `/tmp/gh_repo/index.html` in place
 and prints `VALID JSON, skus: N` — confirm N matches the prior SKU count
@@ -171,6 +255,7 @@ assert 'sellerboard' in d and len(d['sellerboard']['products30']) >= 20, 'seller
 assert 'wow' in d and d['wow']['currentWeek']['totalSales'] > 0
 assert 'monthlyTrend' in d and len(d['monthlyTrend']) >= 1
 assert 'sqpBySku' in d and len(d['sqpBySku']) >= 20
+assert 'shopify' in d and len(d['shopify']['bySku30']) >= 20, 'shopify data missing/thin'
 print('OK', d['meta'])
 "
 ```
@@ -217,5 +302,10 @@ either way, so a failed refresh is not urgent to fix by hand.
   `build(raw_rows, cur_skus_by_asin, cur_inventory_by_sku)` function.
 - `scripts/build_extras.py` — builds `wow`, `sqpBySku`, `monthlyTrend` from
   their respective raw pulls. Exposes `build(account7d, meta7d, tracked_asins)`.
+- `scripts/build_shopify.py` — builds the `shopify` block (Amazon + Shopify
+  Omnichannel tab: retail/wholesale/Faire channel totals and per-SKU
+  breakdown) from the step 2f raw pulls, using its `SHOPIFY_SKU_MAP` constant
+  to attribute Shopify line items to tracked Amazon SKUs. Exposes
+  `build(meta30, meta7)`.
 - `scripts/splice.py` — unchanged; regex-splices the final JSON blob into
   `index.html`'s `#metrics-data` script tag.

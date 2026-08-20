@@ -4,6 +4,7 @@ from collections import defaultdict
 sys.path.insert(0, os.path.dirname(__file__))
 import build_sellerboard
 import build_extras
+import build_shopify
 
 R = '/tmp/refresh/'
 
@@ -346,9 +347,19 @@ except FileNotFoundError as e:
         if k in cur:
             out[k] = cur[k]
 
+# ---- Shopify (Omnichannel tab): retail / wholesale / Faire, account + per-SKU ----
+try:
+    out['shopify'] = build_shopify.build(out['meta'], out['meta7d'])
+except FileNotFoundError as e:
+    print("WARNING: Shopify raw pulls missing, carrying forward existing shopify data:", e)
+    if 'shopify' in cur:
+        out['shopify'] = cur['shopify']
+
 json.dump(out, open(R+'metrics_out.json','w'))
 print("Wrote metrics_out.json, skus:", len(skus))
 print("account:", out['account'])
 print("account7d:", out['account7d'])
 print("sellerboard products30:", len(out.get('sellerboard', {}).get('products30', [])))
 print("monthlyTrend months:", len(out.get('monthlyTrend', [])))
+print("shopify channels30:", out.get('shopify', {}).get('channels30'))
+print("shopify bySku30 count:", len(out.get('shopify', {}).get('bySku30', {})))
